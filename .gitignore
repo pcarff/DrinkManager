@@ -1,0 +1,13 @@
+# Database & runtime files
+*.db
+*.db-journal
+
+# Ignore large RAW camera files (17MB+ each) to stay under GitHub limits
+photos/*.dng
+*.dng
+
+# Node & IDE
+node_modules/
+.DS_Store
+.vscode/
+.idea/

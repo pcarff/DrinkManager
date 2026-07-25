@@ -1,0 +1,1859 @@
+/* ==========================================================================
+   DrinkManager Modern Luxury Styling
+   ========================================================================== */
+
+:root {
+  --bg-dark: #0e0d0b;
+  --bg-card: #171411;
+  --bg-card-hover: #211c18;
+  --bg-glass: rgba(26, 22, 18, 0.85);
+  --border-color: rgba(212, 175, 55, 0.18);
+  --border-gold: #d4af37;
+  
+  --primary-gold: #e5b94c;
+  --gold-glow: rgba(229, 185, 76, 0.25);
+  --accent-amber: #e07a5f;
+  --accent-copper: #c87d32;
+  --accent-teal: #2a9d8f;
+  --accent-red: #e76f51;
+
+  --text-main: #f5f0eb;
+  --text-muted: #a69c92;
+  --text-dim: #736b63;
+
+  --font-serif: 'Cinzel', Georgia, serif;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  line-height: 1.5;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(224, 122, 95, 0.04) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* Header */
+.app-header {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 1rem 2rem;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-icon {
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #f3d483, #e07a5f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-title {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #ffffff 30%, #e5b94c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-tagline {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.header-stats {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.stat-badge {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 85px;
+}
+
+.stat-badge.highlight-stat {
+  border-color: rgba(229, 185, 76, 0.5);
+  background: rgba(229, 185, 76, 0.08);
+}
+
+.stat-value {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-gold);
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* View Mode Switcher Navigation Bar */
+.view-mode-bar {
+  background: rgba(18, 16, 13, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.65rem 2rem;
+}
+
+.view-mode-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.view-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  padding: 0.6rem 1.4rem;
+  border-radius: 30px;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition-fast);
+}
+
+.view-tab:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.view-tab.active {
+  background: linear-gradient(135deg, rgba(229, 185, 76, 0.25), rgba(200, 125, 50, 0.25));
+  border-color: var(--primary-gold);
+  color: var(--primary-gold);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+/* Main Layout */
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Controls & Filters */
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  color: var(--text-dim);
+}
+
+.search-box input {
+  width: 100%;
+  padding: 1.1rem 3rem 1.1rem 3.2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 1rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.search-box input:focus {
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.clear-btn {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Filter Chips */
+.filter-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.55rem 1.1rem;
+  border-radius: 30px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-main);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.chip.active {
+  background: linear-gradient(135deg, rgba(229, 185, 76, 0.25), rgba(200, 125, 50, 0.25));
+  border-color: var(--primary-gold);
+  color: var(--primary-gold);
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(229, 185, 76, 0.2);
+}
+
+/* Results Bar */
+.results-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.sort-selector label {
+  margin-right: 0.5rem;
+}
+
+.sort-selector select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  outline: none;
+  font-family: var(--font-sans);
+}
+
+/* Inventory Grid */
+.inventory-grid,
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Bottle Card */
+.bottle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  position: relative;
+}
+
+.bottle-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-gold);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px var(--gold-glow);
+}
+
+.card-image-wrap {
+  width: 100%;
+  height: 260px;
+  background: #080706;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.bottle-card:hover .card-image-wrap img {
+  transform: scale(1.06);
+}
+
+.category-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(14, 13, 11, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border-color);
+  color: var(--primary-gold);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.3rem 0.65rem;
+  border-radius: 20px;
+}
+
+.proof-tag {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(14, 13, 11, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Favorite Bottle Icon Toggle (🍾) */
+.fav-bottle-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(14, 13, 11, 0.85);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: var(--transition-fast);
+}
+
+.fav-bottle-toggle:hover {
+  transform: scale(1.12);
+  border-color: var(--primary-gold);
+  background: rgba(229, 185, 76, 0.2);
+}
+
+.fav-bottle-toggle.active {
+  background: linear-gradient(135deg, rgba(229, 185, 76, 0.4), rgba(200, 125, 50, 0.4));
+  border-color: var(--primary-gold);
+  color: #ffffff;
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.card-content {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.bottle-brand {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-copper);
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.bottle-name {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+}
+
+.card-footer-info {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.recipe-count-badge {
+  color: var(--accent-amber);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 500;
+}
+
+/* Standalone Recipe Cards (in Recipe Book View) */
+.recipe-card-standalone {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  position: relative;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+
+.recipe-card-standalone:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary-gold);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--gold-glow);
+}
+
+.recipe-card-standalone.mocktail-card {
+  border-color: rgba(42, 157, 143, 0.4);
+  background: linear-gradient(145deg, #141817, #192220);
+}
+
+.recipe-card-standalone.mocktail-card:hover {
+  border-color: var(--accent-teal);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(42, 157, 143, 0.3);
+}
+
+.recipe-base-bottle {
+  font-size: 0.78rem;
+  color: var(--accent-copper);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  max-width: 500px;
+  margin: 3rem auto;
+}
+
+.empty-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--primary-gold), var(--accent-copper));
+  border: none;
+  color: #0e0d0b;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.primary-btn:hover {
+  opacity: 0.92;
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.small-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(8, 7, 6, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+#recipeFormModal {
+  z-index: 2000;
+}
+
+.modal-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-card {
+  background: #15120f;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 1050px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--gold-glow);
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-main);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.close-modal-btn:hover {
+  background: rgba(229, 185, 76, 0.3);
+  color: var(--primary-gold);
+  border-color: var(--primary-gold);
+  transform: scale(1.08);
+}
+
+/* Modal Body Layout */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2rem;
+  padding: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+}
+
+.detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-image-container {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #080706;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.modal-image-container img {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  display: block;
+}
+
+.spec-sheet {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.spec-title {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  color: var(--primary-gold);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.4rem;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.spec-key {
+  color: var(--text-muted);
+}
+
+.spec-val {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Main Detail Content */
+.detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modal-header-section {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.modal-brand {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent-copper);
+  font-weight: 700;
+}
+
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.25;
+  margin: 0.2rem 0 0.6rem 0;
+}
+
+.modal-notes {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  background: rgba(212, 175, 55, 0.05);
+  border-left: 3px solid var(--primary-gold);
+  padding: 0.75rem 1rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Recipe Section Header with Add Button */
+.recipe-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.recipe-section-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--primary-gold);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recipe-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.recipe-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.recipe-card.mocktail-card {
+  border-color: rgba(42, 157, 143, 0.4);
+  background: linear-gradient(145deg, #161a19, #1a2220);
+}
+
+.recipe-card.mocktail-card .recipe-badge {
+  background: rgba(42, 157, 143, 0.2);
+  color: var(--accent-teal);
+  border-color: var(--accent-teal);
+}
+
+.recipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.recipe-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.action-icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.action-icon-btn:hover {
+  background: rgba(229, 185, 76, 0.25);
+  color: var(--primary-gold);
+  border-color: var(--primary-gold);
+  transform: scale(1.05);
+}
+
+.action-icon-btn.fav-recipe-btn.active {
+  background: rgba(229, 185, 76, 0.4);
+  border-color: var(--primary-gold);
+  color: #ffffff;
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.action-icon-btn.delete-btn:hover {
+  background: rgba(231, 111, 81, 0.25);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+.recipe-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(229, 185, 76, 0.15);
+  color: var(--primary-gold);
+  border: 1px solid rgba(229, 185, 76, 0.3);
+}
+
+.recipe-name {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.recipe-glass {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ingredients-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.5rem 0;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+}
+
+.ingredients-list li {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ingredients-list li::before {
+  content: '•';
+  color: var(--primary-gold);
+}
+
+.mocktail-card .ingredients-list li::before {
+  color: var(--accent-teal);
+}
+
+.instructions-text {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-top: 0.75rem;
+}
+
+/* Recipe Form Modal */
+.recipe-form-card {
+  max-width: 600px;
+  padding: 2rem;
+}
+
+.recipe-form-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.recipe-form-header h3 {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--primary-gold);
+}
+
+.recipe-form-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.recipe-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  padding: 0.65rem 0.9rem;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.ingredients-form-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.ingredient-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ingredient-row input {
+  flex-grow: 1;
+}
+
+.remove-ing-btn {
+  background: rgba(231, 111, 81, 0.15);
+  border: 1px solid rgba(231, 111, 81, 0.3);
+  color: var(--accent-red);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.25rem;
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 3000;
+}
+
+.toast {
+  background: #1f1b16;
+  border: 1px solid var(--primary-gold);
+  color: var(--text-main);
+  padding: 0.85rem 1.4rem;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px var(--gold-glow);
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  animation: slideUp 0.3s ease forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Footer */
+.app-footer {
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  padding: 2rem;
+  text-align: center;
+  margin-top: 4rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.footer-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+}
+
+/* ==========================================================================
+   View Mode Switcher Bar
+   ========================================================================== */
+.view-mode-bar {
+  background: rgba(14, 13, 11, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.5rem 2rem;
+  position: sticky;
+  top: 68px;
+  z-index: 90;
+}
+
+.view-mode-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.view-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.view-tab:hover {
+  color: var(--text-main);
+  background: rgba(229, 185, 76, 0.06);
+  border-color: rgba(229, 185, 76, 0.15);
+}
+
+.view-tab.active {
+  color: var(--primary-gold);
+  background: rgba(229, 185, 76, 0.1);
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 12px rgba(229, 185, 76, 0.1);
+}
+
+.tab-icon {
+  font-size: 1.15rem;
+}
+
+/* ==========================================================================
+   Favorite Bottle Toggle (on Bottle Cards)
+   ========================================================================== */
+.fav-bottle-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(14, 13, 11, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  opacity: 0;
+}
+
+.bottle-card:hover .fav-bottle-toggle {
+  opacity: 1;
+}
+
+.fav-bottle-toggle:hover {
+  background: rgba(229, 185, 76, 0.2);
+  border-color: var(--primary-gold);
+  transform: scale(1.15);
+}
+
+.fav-bottle-toggle.active {
+  opacity: 1;
+  background: rgba(229, 185, 76, 0.25);
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+  animation: favPulse 0.4s ease;
+}
+
+@keyframes favPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   Action Icon Buttons (Edit, Delete, Favorite on Recipe Cards)
+   ========================================================================== */
+.action-icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.action-icon-btn:hover {
+  background: rgba(229, 185, 76, 0.12);
+  border-color: var(--primary-gold);
+  color: var(--primary-gold);
+  transform: scale(1.1);
+}
+
+.action-icon-btn.delete-btn:hover {
+  background: rgba(231, 111, 81, 0.15);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.action-icon-btn.fav-recipe-btn.active {
+  background: rgba(229, 185, 76, 0.2);
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.recipe-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Recipes Grid (Recipe Book View)
+   ========================================================================== */
+.recipes-grid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ==========================================================================
+   Standalone Recipe Cards (Recipe Book View)
+   ========================================================================== */
+.recipe-card-standalone {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.recipe-card-standalone:hover {
+  border-color: var(--primary-gold);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 15px var(--gold-glow);
+}
+
+.recipe-card-standalone .recipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.65rem;
+}
+
+.recipe-card-standalone .recipe-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  background: rgba(229, 185, 76, 0.12);
+  color: var(--primary-gold);
+  border: 1px solid rgba(229, 185, 76, 0.2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+}
+
+.recipe-card-standalone.mocktail-card {
+  border-color: rgba(42, 157, 143, 0.3);
+}
+
+.recipe-card-standalone.mocktail-card:hover {
+  border-color: var(--accent-teal);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 15px rgba(42, 157, 143, 0.2);
+}
+
+.recipe-base-bottle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.recipe-card-standalone .recipe-glass {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.recipe-card-standalone .ingredients-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.recipe-card-standalone .ingredients-list li {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 0.18rem 0 0.18rem 1.2rem;
+  position: relative;
+}
+
+.recipe-card-standalone .ingredients-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0.3rem;
+  color: var(--primary-gold);
+}
+
+.recipe-card-standalone .instructions-text {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-top: 0.5rem;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   Highlight Stats Badge
+   ========================================================================== */
+.highlight-stat .stat-value {
+  color: var(--primary-gold) !important;
+}
+
+.highlight-stat .stat-label {
+  color: var(--primary-gold) !important;
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   Modal Favorite Bottle Button
+   ========================================================================== */
+.modal-fav-bottle-btn {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+}
+
+.modal-fav-bottle-btn.primary-btn {
+  background: linear-gradient(135deg, var(--primary-gold) 0%, var(--accent-copper) 100%);
+  color: #0e0d0b;
+  border-color: var(--primary-gold);
+}
+
+/* ==========================================================================
+   Add Mocktail / Add Cocktail Buttons
+   ========================================================================== */
+.add-cocktail-btn,
+.add-mocktail-btn {
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Responsive Adjustments for New Components
+   ========================================================================== */
+@media (max-width: 768px) {
+  .view-mode-bar {
+    padding: 0.4rem 1rem;
+    top: 60px;
+  }
+  
+  .view-tab {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+  
+  .recipes-grid {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+  }
+
+  .fav-bottle-toggle {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Header Actions & Add Bottle Button
+   ========================================================================== */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.header-add-btn {
+  white-space: nowrap;
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+/* ==========================================================================
+   Stock Filter Bar & Stock Badges
+   ========================================================================== */
+.stock-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.stock-filter-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 0.25rem;
+  white-space: nowrap;
+}
+
+.stock-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.stock-chip:hover {
+  background: rgba(229, 185, 76, 0.08);
+  border-color: rgba(229, 185, 76, 0.2);
+  color: var(--text-main);
+}
+
+.stock-chip.active {
+  background: rgba(229, 185, 76, 0.18);
+  border-color: var(--primary-gold);
+  color: var(--primary-gold);
+  font-weight: 600;
+}
+
+/* Stock Badges on Bottle Cards */
+.stock-tag {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  z-index: 10;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 50px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.stock-tag.level-full {
+  background: rgba(42, 157, 143, 0.85);
+  color: #ffffff;
+  border: 1px solid rgba(42, 157, 143, 0.4);
+}
+
+.stock-tag.level-three-quarter {
+  background: rgba(42, 157, 143, 0.7);
+  color: #ffffff;
+  border: 1px solid rgba(42, 157, 143, 0.3);
+}
+
+.stock-tag.level-half {
+  background: rgba(229, 185, 76, 0.85);
+  color: #0e0d0b;
+  border: 1px solid rgba(229, 185, 76, 0.4);
+}
+
+.stock-tag.level-quarter {
+  background: rgba(224, 122, 95, 0.85);
+  color: #ffffff;
+  border: 1px solid rgba(224, 122, 95, 0.4);
+}
+
+.stock-tag.level-almost-empty {
+  background: rgba(231, 111, 81, 0.9);
+  color: #ffffff;
+  border: 1px solid rgba(231, 111, 81, 0.5);
+  animation: pulseWarning 1.5s infinite;
+}
+
+.stock-tag.level-empty {
+  background: rgba(100, 100, 100, 0.85);
+  color: #dddddd;
+  border: 1px solid rgba(150, 150, 150, 0.4);
+}
+
+@keyframes pulseWarning {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; box-shadow: 0 0 10px rgba(231, 111, 81, 0.6); }
+  100% { opacity: 0.8; }
+}
+
+/* Dimmed card for empty bottles */
+.bottle-card.empty-bottle {
+  opacity: 0.65;
+  filter: grayscale(40%);
+}
+
+.bottle-card.empty-bottle:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+/* ==========================================================================
+   Stock Level Selector Gauge (Inside Bottle Detail Modal)
+   ========================================================================== */
+.stock-management-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stock-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.stock-box-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary-gold);
+}
+
+.stock-level-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.35rem;
+}
+
+.stock-level-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.stock-level-btn:hover {
+  background: rgba(229, 185, 76, 0.12);
+  border-color: var(--primary-gold);
+  transform: translateY(-2px);
+}
+
+.stock-level-btn.active {
+  background: rgba(229, 185, 76, 0.22);
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.stock-icon {
+  font-size: 1.1rem;
+}
+
+.stock-lbl {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.stock-level-btn.active .stock-lbl {
+  color: var(--primary-gold);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Can I Make This Badges (Recipe Cards)
+   ========================================================================== */
+.can-make-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.can-make-badge.ready {
+  background: rgba(42, 157, 143, 0.2);
+  color: var(--accent-teal);
+  border: 1px solid rgba(42, 157, 143, 0.4);
+}
+
+.can-make-badge.missing {
+  background: rgba(224, 122, 95, 0.2);
+  color: var(--accent-amber);
+  border: 1px solid rgba(224, 122, 95, 0.4);
+}
+
+/* ==========================================================================
+   Bar Supplies Pantry Grid
+   ========================================================================== */
+.pantry-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.section-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.section-heading {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.section-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.pantry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.pantry-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all var(--transition-normal);
+}
+
+.pantry-card:hover {
+  border-color: var(--primary-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.pantry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pantry-category-tag {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary-gold);
+}
+
+.pantry-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.pantry-notes {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.pantry-stock-toggle {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.pantry-stock-toggle.in-stock {
+  background: rgba(42, 157, 143, 0.2);
+  color: var(--accent-teal);
+  border-color: rgba(42, 157, 143, 0.4);
+}
+
+.pantry-stock-toggle.low {
+  background: rgba(229, 185, 76, 0.2);
+  color: var(--primary-gold);
+  border-color: rgba(229, 185, 76, 0.4);
+}
+
+.pantry-stock-toggle.out {
+  background: rgba(231, 111, 81, 0.2);
+  color: var(--accent-red);
+  border-color: rgba(231, 111, 81, 0.4);
+}
+
+.pantry-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Shopping List Section
+   ========================================================================== */
+.shopping-section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.shopping-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.shopping-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+}
+
+.add-shopping-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.add-shopping-form input {
+  flex-grow: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  outline: none;
+}
+
+.add-shopping-form input:focus {
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.shopping-list-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.shopping-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.shopping-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.shopping-item.purchased {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.shopping-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.shopping-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--primary-gold);
+}
+
+.shopping-item-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Form Layout Helper Grids
+   ========================================================================== */
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+.file-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-upload-row input[type="file"] {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  padding: 0.4rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+.file-preview-name {
+  font-size: 0.82rem;
+  color: var(--primary-gold);
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .form-row-2,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-level-picker {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .pantry-section,
+  .shopping-section {
+    padding: 0 1rem;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+

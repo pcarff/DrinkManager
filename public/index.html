@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DrinkManager — Personal Alcohol Inventory & Bar Vault</title>
+  <meta name="description" content="Personal alcohol inventory with bottle stock levels, bar supplies pantry, cocktail recipes, and zero-proof mocktails.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-icon">🍸</span>
+        <div>
+          <h1 class="brand-title">DrinkManager</h1>
+          <p class="brand-tagline">Cabinet Inventory • Bar Pantry • Recipe Vault</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button id="addBottleBtn" class="primary-btn small-btn header-add-btn">
+          ➕ Add Bottle
+        </button>
+
+        <div class="header-stats" id="headerStats">
+          <div class="stat-badge">
+            <span class="stat-value" id="totalBottlesCount">44</span>
+            <span class="stat-label">Bottles</span>
+          </div>
+          <div class="stat-badge">
+            <span class="stat-value" id="inStockCount">44</span>
+            <span class="stat-label">In Stock</span>
+          </div>
+          <div class="stat-badge">
+            <span class="stat-value" id="totalCocktailsCount">88</span>
+            <span class="stat-label">Cocktails</span>
+          </div>
+          <div class="stat-badge">
+            <span class="stat-value" id="totalPantryCount">26</span>
+            <span class="stat-label">Pantry</span>
+          </div>
+          <div class="stat-badge highlight-stat">
+            <span class="stat-value" id="totalFavoritesCount">0</span>
+            <span class="stat-label">Favorites 🍾</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- View Mode Switcher Bar -->
+  <nav class="view-mode-bar">
+    <div class="view-mode-container">
+      <button class="view-tab active" data-view="inventory">
+        <span class="tab-icon">🍾</span> Cabinet Inventory
+      </button>
+      <button class="view-tab" data-view="recipes">
+        <span class="tab-icon">📖</span> Recipe Book & "Can I Make This?"
+      </button>
+      <button class="view-tab" data-view="pantry">
+        <span class="tab-icon">🧊</span> Bar Supplies Pantry
+      </button>
+      <button class="view-tab" data-view="shopping">
+        <span class="tab-icon">🛒</span> Shopping List
+      </button>
+      <button class="view-tab" data-view="favorites">
+        <span class="tab-icon">🍾⭐</span> My Favorites Vault
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Controls & Filters Section -->
+    <section class="controls-section">
+      <!-- Search Bar -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by bottle name, brand, cocktail recipe, ingredient, glassware, or pantry item..." autocomplete="off">
+        <button id="clearSearchBtn" class="clear-btn hidden">&times;</button>
+      </div>
+
+      <!-- Stock Status Filter Sub-Bar (Visible in Inventory View) -->
+      <div class="stock-filter-bar" id="stockFilterBar">
+        <span class="stock-filter-label">Stock Status:</span>
+        <button class="stock-chip active" data-stock="all">All Items</button>
+        <button class="stock-chip" data-stock="in-stock">In Stock (Full/¾/½)</button>
+        <button class="stock-chip" data-stock="low">Running Low (¼/Almost Empty)</button>
+        <button class="stock-chip" data-stock="empty">Empty / Out of Stock</button>
+      </div>
+
+      <!-- Inventory Category Chips -->
+      <div class="filter-chips-container" id="inventoryFilterChips">
+        <button class="chip active" data-category="all">All Spirits (<span id="countAll">44</span>)</button>
+        <button class="chip" data-category="whiskey">Bourbon & Whiskey (<span id="countWhiskey">8</span>)</button>
+        <button class="chip" data-category="rum">Rum (<span id="countRum">8</span>)</button>
+        <button class="chip" data-category="liqueur">Liqueurs (<span id="countLiqueur">18</span>)</button>
+        <button class="chip" data-category="tequila">Tequila (<span id="countTequila">2</span>)</button>
+        <button class="chip" data-category="amaro">Amaro & Aperitivo (<span id="countAmaro">3</span>)</button>
+        <button class="chip" data-category="wine">Wine & Vermouth (<span id="countWine">3</span>)</button>
+        <button class="chip" data-category="gin">Gin (<span id="countGin">1</span>)</button>
+        <button class="chip" data-category="other">Brandy, Syrup & Decanter (<span id="countOther">3</span>)</button>
+      </div>
+
+      <!-- Recipe Category Chips (Visible in Recipe Book View) -->
+      <div class="filter-chips-container hidden" id="recipeFilterChips">
+        <button class="chip active" data-recipe-filter="all">All Recipes (<span id="countAllRecipes">0</span>)</button>
+        <button class="chip" data-recipe-filter="can-make">Can Make Now ✅ (<span id="countCanMakeRecipes">0</span>)</button>
+        <button class="chip" data-recipe-filter="cocktails">Alcoholic Cocktails (<span id="countAlcoholicRecipes">0</span>)</button>
+        <button class="chip" data-recipe-filter="mocktails">Zero-Proof Mocktails (<span id="countMocktailRecipes">0</span>)</button>
+        <button class="chip" data-recipe-filter="fav-recipes">Favorited Recipes (<span id="countFavRecipes">0</span>)</button>
+      </div>
+
+      <!-- Pantry Category Chips (Visible in Pantry View) -->
+      <div class="filter-chips-container hidden" id="pantryFilterChips">
+        <button class="chip active" data-pantry-category="all">All Pantry Items (<span id="countAllPantry">0</span>)</button>
+        <button class="chip" data-pantry-category="bitters">Bitters & Aromatic</button>
+        <button class="chip" data-pantry-category="syrup">Syrups & Sweeteners</button>
+        <button class="chip" data-pantry-category="juice">Fresh Juices</button>
+        <button class="chip" data-pantry-category="mixer">Mixers & Sodas</button>
+        <button class="chip" data-pantry-category="garnish">Garnishes & Fruit</button>
+        <button class="chip" data-pantry-category="ice">Ice & Specialty</button>
+      </div>
+    </section>
+
+    <!-- Active Filters Summary -->
+    <div class="results-bar">
+      <span id="resultsCountText">Showing 44 of 44 bottles</span>
+      <div class="sort-selector" id="sortSelectorContainer">
+        <label for="sortSelect">Sort By:</label>
+        <select id="sortSelect">
+          <option value="id">Default Order</option>
+          <option value="name">Name (A-Z)</option>
+          <option value="brand">Brand / Base</option>
+          <option value="stockLevel">Stock Level (Highest First)</option>
+          <option value="proofDesc">Proof (High to Low)</option>
+          <option value="proofAsc">Proof (Low to High)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Inventory Bottles Grid -->
+    <section class="inventory-grid" id="inventoryGrid">
+      <!-- Bottle grid items dynamically rendered here -->
+    </section>
+
+    <!-- Recipes Grid View -->
+    <section class="recipes-grid hidden" id="recipesGrid">
+      <!-- Recipe cards dynamically rendered here -->
+    </section>
+
+    <!-- Bar Supplies Pantry Section -->
+    <section class="pantry-section hidden" id="pantrySection">
+      <div class="section-toolbar">
+        <h3 class="section-heading">🧊 Non-Bottle Bar Supplies & Ingredients</h3>
+        <button id="addPantryItemBtn" class="primary-btn small-btn">+ Add Supply Item</button>
+      </div>
+      <div class="pantry-grid" id="pantryGrid">
+        <!-- Pantry cards dynamically rendered here -->
+      </div>
+    </section>
+
+    <!-- Shopping List Section -->
+    <section class="shopping-section hidden" id="shoppingSection">
+      <div class="shopping-container">
+        <div class="shopping-header">
+          <div>
+            <h3 class="section-heading">🛒 Bar Shopping & Restock List</h3>
+            <p class="section-sub">Keep track of missing ingredients, empty bottles, and depleted pantry items.</p>
+          </div>
+          <div class="shopping-actions">
+            <button id="autoRestockBtn" class="secondary-btn small-btn">⚡ Auto-Add Empty Items</button>
+          </div>
+        </div>
+
+        <form id="addShoppingItemForm" class="add-shopping-form">
+          <input type="text" id="shoppingItemInput" placeholder="Add an item to your shopping list (e.g. Pecan Bitters, Peychaud's)..." required>
+          <button type="submit" class="primary-btn small-btn">+ Add Item</button>
+        </form>
+
+        <div class="shopping-list-card">
+          <ul class="shopping-list" id="shoppingList">
+            <!-- Shopping list items dynamically rendered here -->
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state hidden">
+      <div class="empty-icon">🔍</div>
+      <h3 id="emptyStateTitle">No items match your search</h3>
+      <p id="emptyStateText">Try clearing your search query or selecting a different filter.</p>
+      <button id="resetFiltersBtn" class="primary-btn">Reset All Filters</button>
+    </div>
+  </main>
+
+  <!-- Bottle Detail Modal -->
+  <div id="detailModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button id="closeModalBtn" class="close-modal-btn" aria-label="Close modal">&times;</button>
+      <div class="modal-body" id="modalContent">
+        <!-- Dynamically populated detail view -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottle Add / Edit Modal Form -->
+  <div id="bottleFormModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card recipe-form-card">
+      <button id="closeBottleFormBtn" class="close-modal-btn" aria-label="Close bottle form">&times;</button>
+      <div class="recipe-form-header">
+        <h3 id="bottleFormTitle">➕ Add New Alcohol Bottle</h3>
+        <p id="bottleFormSubtitle">Add a bottle to your personal cabinet inventory</p>
+      </div>
+
+      <form id="bottleForm" class="recipe-form-body">
+        <input type="hidden" id="formEditBottleId" value="">
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="bottleNameInput">Bottle / Spirit Name *</label>
+            <input type="text" id="bottleNameInput" required placeholder="e.g. Blanton's Single Barrel Bourbon">
+          </div>
+          <div class="form-group">
+            <label for="bottleBrandInput">Brand Name *</label>
+            <input type="text" id="bottleBrandInput" required placeholder="e.g. Buffalo Trace / Blanton's">
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="bottleCategoryInput">Primary Category *</label>
+            <select id="bottleCategoryInput" required>
+              <option value="Whiskey / Bourbon">Whiskey / Bourbon</option>
+              <option value="Rum">Rum</option>
+              <option value="Liqueur">Liqueur</option>
+              <option value="Tequila">Tequila</option>
+              <option value="Amaro / Aperitivo">Amaro / Aperitivo</option>
+              <option value="Wine / Vermouth">Wine / Vermouth</option>
+              <option value="Gin">Gin</option>
+              <option value="Brandy / Cognac">Brandy / Cognac</option>
+              <option value="Schnapps">Schnapps</option>
+              <option value="Decanter / Unlabeled">Decanter / Unlabeled</option>
+              <option value="Syrup / Non-Alcoholic">Syrup / Non-Alcoholic</option>
+              <option value="Other">Other Spirit</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bottleSubCategoryInput">Style / Sub-Category</label>
+            <input type="text" id="bottleSubCategoryInput" placeholder="e.g. Single Barrel Bourbon">
+          </div>
+          <div class="form-group">
+            <label for="bottleVolumeInput">Volume</label>
+            <input type="text" id="bottleVolumeInput" placeholder="750ml" value="750ml">
+          </div>
+        </div>
+
+        <div class="form-row-3">
+          <div class="form-group">
+            <label for="bottleProofInput">Proof</label>
+            <input type="number" step="0.1" id="bottleProofInput" placeholder="e.g. 90">
+          </div>
+          <div class="form-group">
+            <label for="bottleAbvInput">ABV %</label>
+            <input type="number" step="0.1" id="bottleAbvInput" placeholder="e.g. 45.0">
+          </div>
+          <div class="form-group">
+            <label for="bottleStockLevelInput">Current Stock Level *</label>
+            <select id="bottleStockLevelInput" required>
+              <option value="full">🍾 Full (100%)</option>
+              <option value="three-quarter">🍸 Three-Quarter (75%)</option>
+              <option value="half">🥃 Half Bottle (50%)</option>
+              <option value="quarter">🍹 Quarter Remaining (25%)</option>
+              <option value="almost-empty">⚠️ Almost Empty (10%)</option>
+              <option value="empty">❌ Empty (0%)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bottlePhotoInput">Bottle Photo (Upload Image File)</label>
+          <div class="file-upload-row">
+            <input type="file" id="bottlePhotoInput" accept="image/*">
+            <span class="file-preview-name" id="photoPreviewName">No file selected</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bottleNotesInput">Cabinet & Tasting Notes</label>
+          <textarea id="bottleNotesInput" rows="3" placeholder="Distillery details, flavor notes, bottle condition, shelf location..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="cancelBottleBtn" class="secondary-btn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Bottle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Recipe Add/Edit Modal Form -->
+  <div id="recipeFormModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card recipe-form-card">
+      <button id="closeRecipeFormBtn" class="close-modal-btn" aria-label="Close recipe editor">&times;</button>
+      <div class="recipe-form-header">
+        <h3 id="recipeFormTitle">➕ Add New Cocktail Recipe</h3>
+        <p id="recipeFormSubtitle">Customize your collection recipes for this bottle</p>
+      </div>
+
+      <form id="recipeForm" class="recipe-form-body">
+        <input type="hidden" id="formBottleId">
+        <input type="hidden" id="formRecipeType" value="cocktail">
+        <input type="hidden" id="formRecipeIndex" value="-1">
+
+        <div class="form-group">
+          <label for="recipeNameInput">Recipe Name *</label>
+          <input type="text" id="recipeNameInput" required placeholder="e.g. Spiced Maple Old Fashioned">
+        </div>
+
+        <div class="form-group">
+          <label for="recipeGlassInput">Glassware Type</label>
+          <select id="recipeGlassInput">
+            <option value="Rocks Glass">Rocks Glass</option>
+            <option value="Coupe Glass">Coupe Glass</option>
+            <option value="Highball Glass">Highball Glass</option>
+            <option value="Martini Glass">Martini Glass</option>
+            <option value="Copper Mug">Copper Mug</option>
+            <option value="Julep Cup">Julep Cup</option>
+            <option value="Hurricane Glass">Hurricane Glass</option>
+            <option value="Glencairn Glass">Glencairn Glass</option>
+            <option value="Wine Glass">Wine Glass</option>
+            <option value="Custom Glassware">Custom Glassware</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label-row">
+            <label>Ingredients *</label>
+            <button type="button" id="addIngredientRowBtn" class="secondary-btn small-btn">+ Add Ingredient</button>
+          </div>
+          <div id="ingredientsContainer" class="ingredients-form-list">
+            <!-- Ingredient rows rendered here -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="recipeInstructionsInput">Preparation Instructions *</label>
+          <textarea id="recipeInstructionsInput" rows="3" required placeholder="Describe steps to prepare, shake/stir, garnish, and serve..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="cancelRecipeBtn" class="secondary-btn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Recipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pantry Add / Edit Modal Form -->
+  <div id="pantryFormModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card recipe-form-card">
+      <button id="closePantryFormBtn" class="close-modal-btn" aria-label="Close pantry form">&times;</button>
+      <div class="recipe-form-header">
+        <h3 id="pantryFormTitle">➕ Add Bar Supply Item</h3>
+        <p id="pantryFormSubtitle">Add bitters, syrups, juices, or mixers to your bar pantry</p>
+      </div>
+
+      <form id="pantryForm" class="recipe-form-body">
+        <input type="hidden" id="formEditPantryId" value="">
+
+        <div class="form-group">
+          <label for="pantryNameInput">Supply Name *</label>
+          <input type="text" id="pantryNameInput" required placeholder="e.g. Pecan Bitters or Demerara Syrup">
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="pantryCategoryInput">Category *</label>
+            <select id="pantryCategoryInput" required>
+              <option value="bitters">Bitters & Aromatic</option>
+              <option value="syrup">Syrups & Sweeteners</option>
+              <option value="juice">Fresh Juices</option>
+              <option value="mixer">Mixers & Sodas</option>
+              <option value="garnish">Garnishes & Fruit</option>
+              <option value="ice">Ice & Specialty</option>
+              <option value="other">Other Supply</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pantryStockInput">Stock Status *</label>
+            <select id="pantryStockInput" required>
+              <option value="in-stock">✅ In Stock</option>
+              <option value="low">⚠️ Running Low</option>
+              <option value="out">❌ Out of Stock</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="pantryNotesInput">Notes</label>
+          <input type="text" id="pantryNotesInput" placeholder="e.g. Fee Brothers 4oz bottle, kept in bar drawer">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="cancelPantryBtn" class="secondary-btn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Supply Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>🍸 <strong>DrinkManager Bar Vault</strong> — Personal Alcohol Inventory & Bar Supplies Manager</p>
+      <p class="footer-sub">SQLite Database • Restock Tracker • Android API Enabled 📱</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
