@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Deep obsidian background -->
+    <path
+        android:pathData="M0,0h108v108h-108z"
+        android:fillColor="#0D0F12" />
+    <!-- Subtle gold accent circle border -->
+    <path
+        android:pathData="M54,54m-38,0a38,38 0 1,0 76,0a38,38 0 1,0 -76,0"
+        android:fillColor="#16191E"
+        android:strokeColor="#332712"
+        android:strokeWidth="2"/>
+</vector>

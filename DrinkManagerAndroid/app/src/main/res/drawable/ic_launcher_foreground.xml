@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Glowing Amber Liquid Fill -->
+    <path
+        android:pathData="M37,46 L71,46 L67,70 C67,72 65,74 62,74 L46,74 C43,74 41,72 41,70 Z"
+        android:fillColor="#E5A93C" />
+
+    <!-- Dark Liquid Base Accent -->
+    <path
+        android:pathData="M40,58 L68,58 L66,70 C66,72 64,74 62,74 L46,74 C44,74 42,72 42,70 Z"
+        android:fillColor="#B45309" />
+
+    <!-- Crystal Ice Cube inside Glass -->
+    <path
+        android:pathData="M46,44 L58,40 L64,48 L52,52 Z"
+        android:fillColor="#FDE68A"
+        android:fillAlpha="0.85" />
+    <path
+        android:pathData="M52,52 L64,48 L62,58 L50,62 Z"
+        android:fillColor="#F59E0B"
+        android:fillAlpha="0.7" />
+
+    <!-- Rocks Glass Thick Base -->
+    <path
+        android:pathData="M38,74 L70,74 L68,79 C68,81 66,82 63,82 L45,82 C42,82 40,81 40,79 Z"
+        android:fillColor="#374151" />
+
+    <!-- Rocks Glass Outline -->
+    <path
+        android:pathData="M34,34 L74,34 L68,76 C68,79 65,82 61,82 L47,82 C43,82 40,79 40,76 Z"
+        android:strokeColor="#FCD34D"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Glass Rim Detail -->
+    <path
+        android:pathData="M33,34 L75,34"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+
+    <!-- Lime Slice Accent on Rim -->
+    <path
+        android:pathData="M66,32 C66,24 74,24 74,32 C74,40 66,40 66,32 Z"
+        android:fillColor="#10B981"
+        android:strokeColor="#059669"
+        android:strokeWidth="1.5" />
+    <path
+        android:pathData="M70,25 L70,39 M63,32 L77,32"
+        android:strokeColor="#A7F3D0"
+        android:strokeWidth="1.2" />
+
+</vector>
