@@ -50,6 +50,44 @@ class DrinkManagerRepository(private val context: Context) {
         _serverConfig.value = _serverConfig.value.copy(baseUrl = formatted)
     }
 
+    private val favPrefs = context.getSharedPreferences("drink_manager_favorites", Context.MODE_PRIVATE)
+
+    private fun isBottleFavLocal(id: Int, remoteFav: Int): Int {
+        val key = "bottle_$id"
+        if (favPrefs.contains(key)) {
+            return if (favPrefs.getBoolean(key, false)) 1 else 0
+        }
+        return remoteFav
+    }
+
+    private fun isCocktailFavLocal(name: String, remoteFav: Boolean): Boolean {
+        val key = "cocktail_$name"
+        if (favPrefs.contains(key)) {
+            return favPrefs.getBoolean(key, false)
+        }
+        return remoteFav
+    }
+
+    private fun isPantryFavLocal(id: Int, remoteFav: Int): Int {
+        val key = "pantry_$id"
+        if (favPrefs.contains(key)) {
+            return if (favPrefs.getBoolean(key, false)) 1 else 0
+        }
+        return remoteFav
+    }
+
+    private fun saveBottleFavLocal(id: Int, isFav: Boolean) {
+        favPrefs.edit().putBoolean("bottle_$id", isFav).apply()
+    }
+
+    private fun saveCocktailFavLocal(name: String, isFav: Boolean) {
+        favPrefs.edit().putBoolean("cocktail_$name", isFav).apply()
+    }
+
+    private fun savePantryFavLocal(id: Int, isFav: Boolean) {
+        favPrefs.edit().putBoolean("pantry_$id", isFav).apply()
+    }
+
     /**
      * Loads full 44 bottle inventory from assets/inventory.json as local cache.
      */
@@ -57,20 +95,26 @@ class DrinkManagerRepository(private val context: Context) {
         try {
             val jsonString = context.assets.open("inventory.json").bufferedReader().use { it.readText() }
             val loadedBottles = jsonFormatter.decodeFromString<List<Bottle>>(jsonString)
-            _bottles.value = loadedBottles
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+            _bottles.value = loadedBottles.map { b ->
+                val mergedCocktails = b.cocktails.map { c ->
+                    c.copy(isFavorite = isCocktailFavLocal(c.name, c.isFavorite))
+                }
+                b.copy(
+                    isFavorite = isBottleFavLocal(b.id, b.isFavorite),
+                    cocktails = mergedCocktails
+                )
+            }
 
-        val initialPantry = listOf(
-            PantryItem(id = 1, name = "Rich Demerara Simple Syrup", category = "Syrup", stockStatus = "in-stock", isFavorite = 1),
-            PantryItem(id = 2, name = "Fresh Lemons & Limes", category = "Citrus", stockStatus = "in-stock", isFavorite = 1),
-            PantryItem(id = 3, name = "Angostura Aromatic Bitters", category = "Bitters", stockStatus = "in-stock", isFavorite = 1),
-            PantryItem(id = 4, name = "Fever-Tree Indian Tonic Water", category = "Mixer", stockStatus = "in-stock", isFavorite = 0),
-            PantryItem(id = 5, name = "Luxardo Maraschino Cherries", category = "Garnish", stockStatus = "low", isFavorite = 1),
-            PantryItem(id = 6, name = "Fresh Mint Leaves", category = "Garnish", stockStatus = "out-of-stock", isFavorite = 0)
-        )
-        _pantryItems.value = initialPantry
+            val initialPantry = listOf(
+                PantryItem(id = 1, name = "Rich Demerara Simple Syrup", category = "Syrup", stockStatus = "in-stock", isFavorite = isPantryFavLocal(1, 1)),
+                PantryItem(id = 2, name = "Fresh Lemons & Limes", category = "Citrus", stockStatus = "in-stock", isFavorite = isPantryFavLocal(2, 1)),
+                PantryItem(id = 3, name = "Angostura Aromatic Bitters", category = "Bitters", stockStatus = "in-stock", isFavorite = isPantryFavLocal(3, 1)),
+                PantryItem(id = 4, name = "Fever-Tree Indian Tonic Water", category = "Mixer", stockStatus = "in-stock", isFavorite = isPantryFavLocal(4, 0)),
+                PantryItem(id = 5, name = "Luxardo Maraschino Cherries", category = "Garnish", stockStatus = "low", isFavorite = isPantryFavLocal(5, 1)),
+                PantryItem(id = 6, name = "Fresh Mint Leaves", category = "Garnish", stockStatus = "out-of-stock", isFavorite = isPantryFavLocal(6, 0))
+            )
+            _pantryItems.value = initialPantry
+        } catch (_: Exception) {}
     }
 
     suspend fun refreshData(): Boolean = withContext(Dispatchers.IO) {
@@ -85,7 +129,16 @@ class DrinkManagerRepository(private val context: Context) {
             if (connection.responseCode == 200) {
                 val jsonString = connection.inputStream.bufferedReader().use { it.readText() }
                 val fetchedBottles = jsonFormatter.decodeFromString<List<Bottle>>(jsonString)
-                _bottles.value = fetchedBottles
+                
+                _bottles.value = fetchedBottles.map { b ->
+                    val mergedCocktails = b.cocktails.map { c ->
+                        c.copy(isFavorite = isCocktailFavLocal(c.name, c.isFavorite))
+                    }
+                    b.copy(
+                        isFavorite = isBottleFavLocal(b.id, b.isFavorite),
+                        cocktails = mergedCocktails
+                    )
+                }
 
                 fetchPantryItemsRemote()
 
@@ -119,11 +172,12 @@ class DrinkManagerRepository(private val context: Context) {
             val connection = URL(urlString).openConnection() as HttpURLConnection
             connection.requestMethod = "GET"
             connection.connectTimeout = 3000
-
             if (connection.responseCode == 200) {
                 val jsonString = connection.inputStream.bufferedReader().use { it.readText() }
-                val fetched = jsonFormatter.decodeFromString<List<PantryItem>>(jsonString)
-                _pantryItems.value = fetched
+                val remotePantry = jsonFormatter.decodeFromString<List<PantryItem>>(jsonString)
+                _pantryItems.value = remotePantry.map { item ->
+                    item.copy(isFavorite = isPantryFavLocal(item.id, item.isFavorite))
+                }
             }
         } catch (_: Exception) {}
     }
@@ -172,30 +226,75 @@ class DrinkManagerRepository(private val context: Context) {
     }
 
     suspend fun toggleBottleFavorite(bottleId: Int) = withContext(Dispatchers.IO) {
+        var newFavStatus = 0
         _bottles.value = _bottles.value.map { b ->
             if (b.id == bottleId) {
-                b.copy(isFavorite = if (b.isFavorite == 1) 0 else 1)
+                newFavStatus = if (b.isFavorite == 1) 0 else 1
+                b.copy(isFavorite = newFavStatus)
             } else b
         }
+        saveBottleFavLocal(bottleId, newFavStatus == 1)
+
+        try {
+            val urlString = "${_serverConfig.value.baseUrl}/api/bottles/$bottleId/favorite"
+            val connection = URL(urlString).openConnection() as HttpURLConnection
+            connection.requestMethod = "PUT"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 3000
+            val payload = "{\"isFavorite\": $newFavStatus}"
+            OutputStreamWriter(connection.outputStream).use { it.write(payload) }
+            connection.responseCode
+        } catch (_: Exception) {}
     }
 
     suspend fun toggleCocktailFavorite(cocktailName: String) = withContext(Dispatchers.IO) {
+        var newFavStatus = false
         _bottles.value = _bottles.value.map { b ->
             val updatedCocktails = b.cocktails.map { c ->
                 if (c.name.equals(cocktailName, ignoreCase = true)) {
-                    c.copy(isFavorite = !c.isFavorite)
+                    newFavStatus = !c.isFavorite
+                    c.copy(isFavorite = newFavStatus)
                 } else c
             }
             b.copy(cocktails = updatedCocktails)
         }
+        saveCocktailFavLocal(cocktailName, newFavStatus)
+
+        try {
+            val urlString = "${_serverConfig.value.baseUrl}/api/cocktails/favorite"
+            val connection = URL(urlString).openConnection() as HttpURLConnection
+            connection.requestMethod = "PUT"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 3000
+            val payload = "{\"name\": \"$cocktailName\", \"isFavorite\": $newFavStatus}"
+            OutputStreamWriter(connection.outputStream).use { it.write(payload) }
+            connection.responseCode
+        } catch (_: Exception) {}
     }
 
     suspend fun togglePantryFavorite(itemId: Int) = withContext(Dispatchers.IO) {
+        var newFavStatus = 0
         _pantryItems.value = _pantryItems.value.map { item ->
             if (item.id == itemId) {
-                item.copy(isFavorite = if (item.isFavorite == 1) 0 else 1)
+                newFavStatus = if (item.isFavorite == 1) 0 else 1
+                item.copy(isFavorite = newFavStatus)
             } else item
         }
+        savePantryFavLocal(itemId, newFavStatus == 1)
+
+        try {
+            val urlString = "${_serverConfig.value.baseUrl}/api/pantry/$itemId/favorite"
+            val connection = URL(urlString).openConnection() as HttpURLConnection
+            connection.requestMethod = "PUT"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 3000
+            val payload = "{\"isFavorite\": $newFavStatus}"
+            OutputStreamWriter(connection.outputStream).use { it.write(payload) }
+            connection.responseCode
+        } catch (_: Exception) {}
     }
 
     suspend fun saveEditedCocktail(updated: Cocktail) = withContext(Dispatchers.IO) {

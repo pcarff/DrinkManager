@@ -236,6 +236,61 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 9b. PUT /api/bottles/:id/favorite
+  const bottleFavoriteMatch = pathname.match(/^\/api\/(?:inventory|bottles)\/(\d+)\/favorite$/);
+  if (req.method === 'PUT' && bottleFavoriteMatch) {
+    const bottleId = parseInt(bottleFavoriteMatch[1], 10);
+    parseRequestBody(req, (err, body) => {
+      try {
+        const isFavorite = body ? body.isFavorite : 1;
+        const updated = dbModule.toggleBottleFavorite(bottleId, isFavorite);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Bottle favorite updated', bottle: updated }));
+      } catch (fErr) {
+        console.error('Error toggling bottle favorite:', fErr);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to update bottle favorite' }));
+      }
+    });
+    return;
+  }
+
+  // 9c. PUT /api/pantry/:id/favorite
+  const pantryFavoriteMatch = pathname.match(/^\/api\/pantry\/(\d+)\/favorite$/);
+  if (req.method === 'PUT' && pantryFavoriteMatch) {
+    const pantryId = parseInt(pantryFavoriteMatch[1], 10);
+    parseRequestBody(req, (err, body) => {
+      try {
+        const isFavorite = body ? body.isFavorite : 1;
+        const updated = dbModule.togglePantryFavorite(pantryId, isFavorite);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Pantry favorite updated', item: updated }));
+      } catch (fErr) {
+        console.error('Error toggling pantry favorite:', fErr);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to update pantry favorite' }));
+      }
+    });
+    return;
+  }
+
+  // 9d. PUT /api/cocktails/favorite
+  if (req.method === 'PUT' && pathname === '/api/cocktails/favorite') {
+    parseRequestBody(req, (err, body) => {
+      try {
+        const { id, name, isFavorite } = body || {};
+        dbModule.toggleCocktailFavorite(id, isFavorite, name);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Cocktail favorite updated' }));
+      } catch (fErr) {
+        console.error('Error toggling cocktail favorite:', fErr);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to update cocktail favorite' }));
+      }
+    });
+    return;
+  }
+
   // 10. PUT /api/inventory/:id/mocktail (Update Mocktail)
   const mocktailMatch = pathname.match(/^\/api\/(?:inventory|bottles)\/(\d+)\/mocktail$/);
   if ((req.method === 'PUT' || req.method === 'POST') && mocktailMatch) {

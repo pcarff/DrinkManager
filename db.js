@@ -555,5 +555,27 @@ module.exports = {
       missingIngredients: missing,
       availableIngredients: available
     };
+  },
+
+  toggleBottleFavorite(id, isFavorite) {
+    const val = (isFavorite === true || isFavorite === 1 || isFavorite === '1' || isFavorite === 'true') ? 1 : 0;
+    db.prepare('UPDATE bottles SET is_favorite = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(val, id);
+    return this.getBottleById(id);
+  },
+
+  togglePantryFavorite(id, isFavorite) {
+    const val = (isFavorite === true || isFavorite === 1 || isFavorite === '1' || isFavorite === 'true') ? 1 : 0;
+    db.prepare('UPDATE pantry_items SET is_favorite = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(val, id);
+    return db.prepare('SELECT * FROM pantry_items WHERE id = ?').get(id);
+  },
+
+  toggleCocktailFavorite(id, isFavorite, cocktailName) {
+    const val = (isFavorite === true || isFavorite === 1 || isFavorite === '1' || isFavorite === 'true') ? 1 : 0;
+    if (id) {
+      db.prepare('UPDATE cocktails SET is_favorite = ? WHERE id = ?').run(val, id);
+    } else if (cocktailName) {
+      db.prepare('UPDATE cocktails SET is_favorite = ? WHERE LOWER(name) = LOWER(?)').run(val, cocktailName);
+    }
+    return true;
   }
 };
