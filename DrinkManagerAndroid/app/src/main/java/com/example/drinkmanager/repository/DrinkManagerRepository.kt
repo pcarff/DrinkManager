@@ -97,10 +97,21 @@ class DrinkManagerRepository(private val context: Context) {
             val loadedBottles = jsonFormatter.decodeFromString<List<Bottle>>(jsonString)
             _bottles.value = loadedBottles.map { b ->
                 val mergedCocktails = b.cocktails.map { c ->
-                    c.copy(isFavorite = isCocktailFavLocal(c.name, c.isFavorite))
+                    c.copy(
+                        bottleId = c.effectiveBottleId,
+                        bottleName = c.effectiveBottleName,
+                        isMocktail = c.effectiveIsMocktail,
+                        isFavorite = isCocktailFavLocal(c.name, c.effectiveIsFavorite)
+                    )
                 }
                 b.copy(
-                    isFavorite = isBottleFavLocal(b.id, b.isFavorite),
+                    subCategory = b.effectiveSubCategory,
+                    abvPercent = b.effectiveAbvPercent,
+                    photoFilename = b.effectivePhotoFilename,
+                    allPhotos = b.effectiveAllPhotos,
+                    stockStatus = b.effectiveStockStatus,
+                    stockLevel = b.effectiveStockLevel,
+                    isFavorite = isBottleFavLocal(b.id, b.effectiveIsFavorite),
                     cocktails = mergedCocktails
                 )
             }
@@ -132,10 +143,21 @@ class DrinkManagerRepository(private val context: Context) {
                 
                 _bottles.value = fetchedBottles.map { b ->
                     val mergedCocktails = b.cocktails.map { c ->
-                        c.copy(isFavorite = isCocktailFavLocal(c.name, c.isFavorite))
+                        c.copy(
+                            bottleId = c.effectiveBottleId,
+                            bottleName = c.effectiveBottleName,
+                            isMocktail = c.effectiveIsMocktail,
+                            isFavorite = isCocktailFavLocal(c.name, c.effectiveIsFavorite)
+                        )
                     }
                     b.copy(
-                        isFavorite = isBottleFavLocal(b.id, b.isFavorite),
+                        subCategory = b.effectiveSubCategory,
+                        abvPercent = b.effectiveAbvPercent,
+                        photoFilename = b.effectivePhotoFilename,
+                        allPhotos = b.effectiveAllPhotos,
+                        stockStatus = b.effectiveStockStatus,
+                        stockLevel = b.effectiveStockLevel,
+                        isFavorite = isBottleFavLocal(b.id, b.effectiveIsFavorite),
                         cocktails = mergedCocktails
                     )
                 }
@@ -158,7 +180,7 @@ class DrinkManagerRepository(private val context: Context) {
         } catch (e: Exception) {
             _serverConfig.value = _serverConfig.value.copy(
                 isOnline = false,
-                syncStatusMessage = "Offline Mode (${_bottles.value.size} bottles loaded)"
+                syncStatusMessage = "Sync error: ${e.localizedMessage ?: "Offline"}"
             )
         } finally {
             _isLoading.value = false
@@ -176,7 +198,10 @@ class DrinkManagerRepository(private val context: Context) {
                 val jsonString = connection.inputStream.bufferedReader().use { it.readText() }
                 val remotePantry = jsonFormatter.decodeFromString<List<PantryItem>>(jsonString)
                 _pantryItems.value = remotePantry.map { item ->
-                    item.copy(isFavorite = isPantryFavLocal(item.id, item.isFavorite))
+                    item.copy(
+                        stockStatus = item.effectiveStockStatus,
+                        isFavorite = isPantryFavLocal(item.id, item.effectiveIsFavorite)
+                    )
                 }
             }
         } catch (_: Exception) {}

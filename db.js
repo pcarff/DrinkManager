@@ -221,7 +221,8 @@ module.exports = {
         name: c.name,
         glass: c.glass,
         instructions: c.instructions,
-        is_favorite: c.is_favorite,
+        is_favorite: c.is_favorite || 0,
+        isFavorite: c.is_favorite === 1,
         ingredients: getIngredients.all(c.id).map(i => i.raw_text)
       }));
 
@@ -445,7 +446,17 @@ module.exports = {
 
   // Pantry Items CRUD
   getAllPantryItems() {
-    return db.prepare('SELECT * FROM pantry_items ORDER BY category ASC, name ASC').all();
+    const rows = db.prepare('SELECT * FROM pantry_items ORDER BY category ASC, name ASC').all();
+    return rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      stockStatus: r.stock_status || 'in-stock',
+      stock_status: r.stock_status || 'in-stock',
+      isFavorite: r.is_favorite || 0,
+      is_favorite: r.is_favorite || 0,
+      notes: r.notes
+    }));
   },
 
   createPantryItem(data) {
