@@ -111,6 +111,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (bottles.isNotEmpty() && _selectedBottle.value == null) {
                     _selectedBottle.value = bottles.first()
                 }
+                // Keep selectedBottle in sync when underlying list changes
+                val currentId = _selectedBottle.value?.id
+                if (currentId != null) {
+                    val updated = bottles.find { it.id == currentId }
+                    if (updated != null && updated != _selectedBottle.value) {
+                        _selectedBottle.value = updated
+                    }
+                }
             }
         }
         refreshServerData()
