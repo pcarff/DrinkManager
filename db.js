@@ -232,7 +232,8 @@ module.exports = {
         name: mocktailRow.name,
         glass: mocktailRow.glass,
         instructions: mocktailRow.instructions,
-        is_favorite: mocktailRow.is_favorite,
+        is_favorite: mocktailRow.is_favorite || 0,
+        isFavorite: mocktailRow.is_favorite === 1,
         ingredients: getIngredients.all(mocktailRow.id).map(i => i.raw_text)
       } : null;
 
@@ -273,7 +274,8 @@ module.exports = {
       name: c.name,
       glass: c.glass,
       instructions: c.instructions,
-      is_favorite: c.is_favorite,
+      is_favorite: c.is_favorite || 0,
+      isFavorite: c.is_favorite === 1,
       ingredients: getIngredients.all(c.id).map(i => i.raw_text)
     }));
 
@@ -283,7 +285,8 @@ module.exports = {
       name: mocktailRow.name,
       glass: mocktailRow.glass,
       instructions: mocktailRow.instructions,
-      is_favorite: mocktailRow.is_favorite,
+      is_favorite: mocktailRow.is_favorite || 0,
+      isFavorite: mocktailRow.is_favorite === 1,
       ingredients: getIngredients.all(mocktailRow.id).map(i => i.raw_text)
     } : null;
 

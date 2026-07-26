@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function fetchAllData() {
     await Promise.all([fetchInventory(), fetchPantry(), fetchShoppingList()]);
+    mergeServerFavorites();
     renderApp();
   }
 
@@ -615,29 +616,99 @@ document.addEventListener('DOMContentLoaded', () => {
     recipesGrid.innerHTML = favRecipes.map(r => createStandaloneRecipeCardHTML(r)).join('');
   }
 
-  // Favorites Persistence
+  // Favorites Persistence — localStorage + Server Sync
   function toggleFavoriteBottle(bottleId) {
-    if (favoriteBottles.has(bottleId)) {
-      favoriteBottles.delete(bottleId);
-      showToast(`Removed bottle from Favorites Vault`);
-    } else {
+    const nowFavorite = !favoriteBottles.has(bottleId);
+    if (nowFavorite) {
       favoriteBottles.add(bottleId);
       showToast(`🍾 Added bottle to Favorites Vault!`);
+    } else {
+      favoriteBottles.delete(bottleId);
+      showToast(`Removed bottle from Favorites Vault`);
     }
     localStorage.setItem('drinkManager_favBottles', JSON.stringify(Array.from(favoriteBottles)));
+
+    // Sync to server
+    fetch(`/api/bottles/${bottleId}/favorite`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isFavorite: nowFavorite ? 1 : 0 })
+    }).catch(() => {});
+
     renderApp();
   }
 
   function toggleFavoriteRecipe(uniqueKey) {
-    if (favoriteRecipes.has(uniqueKey)) {
-      favoriteRecipes.delete(uniqueKey);
-      showToast(`Removed recipe from Favorites Vault`);
-    } else {
+    const nowFavorite = !favoriteRecipes.has(uniqueKey);
+    if (nowFavorite) {
       favoriteRecipes.add(uniqueKey);
       showToast(`🍾 Added recipe to Favorites Vault!`);
+    } else {
+      favoriteRecipes.delete(uniqueKey);
+      showToast(`Removed recipe from Favorites Vault`);
     }
     localStorage.setItem('drinkManager_favRecipes', JSON.stringify(Array.from(favoriteRecipes)));
+
+    // Resolve uniqueKey to cocktail name and sync to server
+    const recipe = getAllRecipesList().find(r => r.uniqueKey === uniqueKey);
+    if (recipe) {
+      fetch(`/api/cocktails/favorite`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: recipe.name, isFavorite: nowFavorite })
+      }).catch(() => {});
+    }
+
     renderApp();
+  }
+
+  // Bidirectional merge: server favorites → localStorage, and localStorage favorites → server
+  function mergeServerFavorites() {
+    // 1. Pull server favorites into localStorage
+    inventoryData.forEach(bottle => {
+      if (bottle.isFavorite === 1 || bottle.is_favorite === 1) {
+        favoriteBottles.add(bottle.id);
+      }
+      if (bottle.cocktails) {
+        bottle.cocktails.forEach((c, idx) => {
+          const key = `b${bottle.id}_c${idx}`;
+          if (c.isFavorite === true || c.is_favorite === 1 || c.isFavorite === 1) {
+            favoriteRecipes.add(key);
+          }
+        });
+      }
+    });
+
+    // 2. Push localStorage favorites to server (if server doesn't already have them)
+    inventoryData.forEach(bottle => {
+      const serverBottleFav = (bottle.isFavorite === 1 || bottle.is_favorite === 1);
+      const localBottleFav = favoriteBottles.has(bottle.id);
+      if (localBottleFav && !serverBottleFav) {
+        fetch(`/api/bottles/${bottle.id}/favorite`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isFavorite: 1 })
+        }).catch(() => {});
+      }
+
+      if (bottle.cocktails) {
+        bottle.cocktails.forEach((c, idx) => {
+          const key = `b${bottle.id}_c${idx}`;
+          const serverCocktailFav = (c.isFavorite === true || c.is_favorite === 1 || c.isFavorite === 1);
+          const localCocktailFav = favoriteRecipes.has(key);
+          if (localCocktailFav && !serverCocktailFav) {
+            fetch(`/api/cocktails/favorite`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: c.name, isFavorite: true })
+            }).catch(() => {});
+          }
+        });
+      }
+    });
+
+    localStorage.setItem('drinkManager_favBottles', JSON.stringify(Array.from(favoriteBottles)));
+    localStorage.setItem('drinkManager_favRecipes', JSON.stringify(Array.from(favoriteRecipes)));
   }
 
   // ====================================================
