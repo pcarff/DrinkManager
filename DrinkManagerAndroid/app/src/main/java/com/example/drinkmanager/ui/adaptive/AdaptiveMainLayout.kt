@@ -61,6 +61,8 @@ import com.example.drinkmanager.ui.screens.BottleDetailPane
 import com.example.drinkmanager.ui.screens.CocktailsScreen
 import com.example.drinkmanager.ui.screens.InventoryListPane
 import com.example.drinkmanager.ui.screens.PantryScreen
+import com.example.drinkmanager.model.Cocktail
+import com.example.drinkmanager.ui.screens.RecipeDetailDialog
 import com.example.drinkmanager.ui.screens.SettingsScreen
 import com.example.drinkmanager.viewmodel.MainViewModel
 
@@ -80,6 +82,9 @@ fun MainNavigation(viewModel: MainViewModel) {
     val allCocktails by viewModel.allCocktails.collectAsState()
     val selectedCocktail by viewModel.selectedCocktail.collectAsState()
     val canMakeOnlyFilter by viewModel.canMakeOnlyFilter.collectAsState()
+    val favoritesOnlyFilter by viewModel.favoritesOnlyFilter.collectAsState()
+
+    val activeRecipeDialogCocktail by viewModel.activeRecipeDialogCocktail.collectAsState()
 
     val pantryItems by viewModel.pantryItems.collectAsState()
     val serverConfig by viewModel.serverConfig.collectAsState()
@@ -169,7 +174,10 @@ fun MainNavigation(viewModel: MainViewModel) {
                                         selectedStockFilter = selectedStockFilter,
                                         onStockFilterChange = { viewModel.selectStockFilter(it) },
                                         onSelectBottle = { viewModel.selectBottle(it) },
-                                        onUpdateStockLevel = { id, lvl -> viewModel.updateStockLevel(id, lvl) },
+                                        onUpdateStockLevel = { id, lvl -> viewModel.updateBottleStock(id, lvl) },
+                                        onToggleFavorite = { viewModel.toggleBottleFavorite(it) },
+                                        isFavoritesOnly = favoritesOnlyFilter,
+                                        onToggleFavoritesOnly = { viewModel.toggleFavoritesOnly() },
                                         modifier = Modifier.weight(0.46f)
                                     )
 
@@ -177,7 +185,9 @@ fun MainNavigation(viewModel: MainViewModel) {
 
                                     BottleDetailPane(
                                         bottle = selectedBottle,
-                                        onUpdateStockLevel = { id, lvl -> viewModel.updateStockLevel(id, lvl) },
+                                        onUpdateStockLevel = { id, lvl -> viewModel.updateBottleStock(id, lvl) },
+                                        onToggleFavorite = { viewModel.toggleBottleFavorite(it) },
+                                        onSelectCocktail = { viewModel.openRecipeDialog(it) },
                                         modifier = Modifier.weight(0.54f)
                                     )
                                 }
@@ -190,13 +200,16 @@ fun MainNavigation(viewModel: MainViewModel) {
                                     onSearchChange = { viewModel.setSearchQuery(it) },
                                     canMakeOnly = canMakeOnlyFilter,
                                     onToggleCanMakeOnly = { viewModel.toggleCanMakeOnly() },
-                                    onSelectCocktail = { viewModel.selectCocktail(it) }
+                                    onSelectCocktail = { viewModel.openRecipeDialog(it) },
+                                    onToggleFavorite = { viewModel.toggleCocktailFavorite(it) },
+                                    isFavoritesOnly = favoritesOnlyFilter,
+                                    onToggleFavoritesOnly = { viewModel.toggleFavoritesOnly() }
                                 )
                             }
                             2 -> {
                                 PantryScreen(
                                     items = pantryItems,
-                                    onToggleStock = { viewModel.togglePantryItem(it) }
+                                    onToggleStock = { viewModel.togglePantryStock(it) }
                                 )
                             }
                             3 -> {
@@ -277,7 +290,9 @@ fun MainNavigation(viewModel: MainViewModel) {
                             HorizontalDivider(color = GlassCardBorder)
                             BottleDetailPane(
                                 bottle = selectedBottle,
-                                onUpdateStockLevel = { id, lvl -> viewModel.updateStockLevel(id, lvl) }
+                                onUpdateStockLevel = { id, lvl -> viewModel.updateBottleStock(id, lvl) },
+                                onToggleFavorite = { viewModel.toggleBottleFavorite(it) },
+                                onSelectCocktail = { viewModel.openRecipeDialog(it) }
                             )
                         }
                     } else {
@@ -296,7 +311,10 @@ fun MainNavigation(viewModel: MainViewModel) {
                                         viewModel.selectBottle(bottle)
                                         showMobileDetailView = true
                                     },
-                                    onUpdateStockLevel = { id, lvl -> viewModel.updateStockLevel(id, lvl) }
+                                    onUpdateStockLevel = { id, lvl -> viewModel.updateBottleStock(id, lvl) },
+                                    onToggleFavorite = { viewModel.toggleBottleFavorite(it) },
+                                    isFavoritesOnly = favoritesOnlyFilter,
+                                    onToggleFavoritesOnly = { viewModel.toggleFavoritesOnly() }
                                 )
                             }
                             1 -> {
@@ -307,13 +325,16 @@ fun MainNavigation(viewModel: MainViewModel) {
                                     onSearchChange = { viewModel.setSearchQuery(it) },
                                     canMakeOnly = canMakeOnlyFilter,
                                     onToggleCanMakeOnly = { viewModel.toggleCanMakeOnly() },
-                                    onSelectCocktail = { viewModel.selectCocktail(it) }
+                                    onSelectCocktail = { viewModel.openRecipeDialog(it) },
+                                    onToggleFavorite = { viewModel.toggleCocktailFavorite(it) },
+                                    isFavoritesOnly = favoritesOnlyFilter,
+                                    onToggleFavoritesOnly = { viewModel.toggleFavoritesOnly() }
                                 )
                             }
                             2 -> {
                                 PantryScreen(
                                     items = pantryItems,
-                                    onToggleStock = { viewModel.togglePantryItem(it) }
+                                    onToggleStock = { viewModel.togglePantryStock(it) }
                                 )
                             }
                             3 -> {
@@ -328,6 +349,16 @@ fun MainNavigation(viewModel: MainViewModel) {
                     }
                 }
             }
+        }
+
+        // FULL RECIPE VIEW & EDIT POPUP DIALOG
+        if (activeRecipeDialogCocktail != null) {
+            RecipeDetailDialog(
+                cocktail = activeRecipeDialogCocktail,
+                onDismiss = { viewModel.closeRecipeDialog() },
+                onToggleFavorite = { viewModel.toggleCocktailFavorite(it) },
+                onSaveRecipe = { viewModel.saveRecipe(it) }
+            )
         }
     }
 }

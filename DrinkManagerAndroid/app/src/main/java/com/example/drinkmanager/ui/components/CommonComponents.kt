@@ -193,9 +193,9 @@ fun StockBadge(status: String) {
 }
 
 @Composable
-fun SpecTag(label: String, value: String, color: Color = AmberPrimary) {
+fun SpecTag(label: String, value: String, color: Color = AmberPrimary, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(6.dp))
             .background(GlassCardBorder.copy(alpha = 0.4f))
             .padding(horizontal = 8.dp, vertical = 4.dp),

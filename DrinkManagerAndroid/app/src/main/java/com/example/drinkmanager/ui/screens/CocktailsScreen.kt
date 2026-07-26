@@ -43,6 +43,10 @@ import com.example.drinkmanager.theme.TextSecondary
 import com.example.drinkmanager.ui.components.GlassCard
 import com.example.drinkmanager.ui.components.SearchBarComponent
 
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.IconButton
+
 @Composable
 fun CocktailsScreen(
     cocktails: List<Cocktail>,
@@ -52,6 +56,9 @@ fun CocktailsScreen(
     canMakeOnly: Boolean,
     onToggleCanMakeOnly: () -> Unit,
     onSelectCocktail: (Cocktail) -> Unit,
+    onToggleFavorite: (Cocktail) -> Unit = {},
+    isFavoritesOnly: Boolean = false,
+    onToggleFavoritesOnly: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -67,48 +74,78 @@ fun CocktailsScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // Can Make Toggle Row
+        // Toggles Row: Can Make Now + Favorites Only
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(GlassCardBg)
-                .padding(horizontal = 16.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = StockInStock, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
+            // Can Make Toggle Card
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(GlassCardBg)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = StockInStock, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Can Make Now",
-                        fontSize = 14.sp,
+                        text = "Can Make",
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
-                    Text(
-                        text = "Filter recipes with in-stock ingredients",
-                        fontSize = 11.sp,
-                        color = TextSecondary
-                    )
                 }
+
+                Switch(
+                    checked = canMakeOnly,
+                    onCheckedChange = { onToggleCanMakeOnly() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = AmberPrimary,
+                        checkedTrackColor = AmberPrimary.copy(alpha = 0.3f)
+                    )
+                )
             }
 
-            Switch(
-                checked = canMakeOnly,
-                onCheckedChange = { onToggleCanMakeOnly() },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = AmberPrimary,
-                    checkedTrackColor = AmberPrimary.copy(alpha = 0.3f)
+            // Favorites Toggle Card
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(GlassCardBg)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Star, contentDescription = null, tint = GoldHighlight, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Favorites",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                }
+
+                Switch(
+                    checked = isFavoritesOnly,
+                    onCheckedChange = { onToggleFavoritesOnly() },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = GoldHighlight,
+                        checkedTrackColor = GoldHighlight.copy(alpha = 0.3f)
+                    )
                 )
-            )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "Cocktail Recipes (${cocktails.size})",
+            text = "Cocktail Recipes (${cocktails.size}) — Tap to View & Edit",
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = AmberPrimary
@@ -167,6 +204,14 @@ fun CocktailsScreen(
                                 fontSize = 12.sp,
                                 color = TextSecondary,
                                 maxLines = 2
+                            )
+                        }
+
+                        IconButton(onClick = { onToggleFavorite(cocktail) }) {
+                            Icon(
+                                if (cocktail.isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
+                                contentDescription = "Favorite Cocktail",
+                                tint = if (cocktail.isFavorite) GoldHighlight else TextSecondary
                             )
                         }
                     }

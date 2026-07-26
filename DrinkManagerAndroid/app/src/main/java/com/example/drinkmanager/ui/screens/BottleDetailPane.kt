@@ -29,7 +29,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.IconButton
 import com.example.drinkmanager.model.Bottle
+import com.example.drinkmanager.model.Cocktail
 import com.example.drinkmanager.theme.AmberPrimary
 import com.example.drinkmanager.theme.GlassCardBorder
 import com.example.drinkmanager.theme.GoldHighlight
@@ -44,6 +49,8 @@ import com.example.drinkmanager.ui.components.StockLevelSelector
 fun BottleDetailPane(
     bottle: Bottle?,
     onUpdateStockLevel: (Int, String) -> Unit,
+    onToggleFavorite: (Int) -> Unit = {},
+    onSelectCocktail: (Cocktail) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (bottle == null) {
@@ -101,51 +108,30 @@ fun BottleDetailPane(
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        StockBadge(status = bottle.stockStatus)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        if (bottle.volume != null) {
-                            SpecTag(label = "Volume", value = bottle.volume)
-                        }
-                    }
+                }
+
+                IconButton(onClick = { onToggleFavorite(bottle.id) }) {
+                    Icon(
+                        if (bottle.isFavorite == 1) Icons.Default.Star else Icons.Outlined.StarBorder,
+                        contentDescription = "Favorite Bottle",
+                        tint = if (bottle.isFavorite == 1) GoldHighlight else TextSecondary
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = GlassCardBorder)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Proof & ABV Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "PROOF", fontSize = 10.sp, color = TextSecondary, fontWeight = FontWeight.Bold)
+                StockBadge(status = bottle.stockStatus)
+                bottle.volume?.let {
                     Text(
-                        text = bottle.proof?.let { "${it.toInt()}°" } ?: "N/A",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = GoldHighlight
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "ABV", fontSize = 10.sp, color = TextSecondary, fontWeight = FontWeight.Bold)
-                    Text(
-                        text = bottle.abvPercent?.let { "$it%" } ?: "N/A",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AmberPrimary
-                    )
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "CATEGORY", fontSize = 10.sp, color = TextSecondary, fontWeight = FontWeight.Bold)
-                    Text(
-                        text = bottle.category,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextPrimary
+                        text = "Volume: $it",
+                        fontSize = 13.sp,
+                        color = TextSecondary
                     )
                 }
             }
@@ -153,7 +139,19 @@ fun BottleDetailPane(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Stock Selector Card
+        // Proof & Specs Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            SpecTag(label = "PROOF", value = bottle.proof?.let { "${it.toInt()}°" } ?: "N/A", modifier = Modifier.weight(1f))
+            SpecTag(label = "ABV", value = bottle.abvPercent?.let { "$it%" } ?: "N/A", modifier = Modifier.weight(1f))
+            SpecTag(label = "CATEGORY", value = bottle.category, modifier = Modifier.weight(1.2f))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Stock Adjuster Card
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = "Quick Stock Adjuster",
@@ -161,7 +159,7 @@ fun BottleDetailPane(
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
             StockLevelSelector(
                 currentLevel = bottle.stockLevel,
                 onLevelSelected = { newLevel ->
@@ -172,10 +170,10 @@ fun BottleDetailPane(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Bar Location & Notes Card
+        // Distiller Notes & Location Card
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.LocationOn, contentDescription = "Location", tint = AmberPrimary, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.LocationOn, contentDescription = "Location", tint = AmberPrimary, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(text = "Location: ", fontSize = 13.sp, color = TextSecondary)
                 Text(
@@ -205,8 +203,8 @@ fun BottleDetailPane(
         if (bottle.cocktails.isNotEmpty()) {
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "Matching Cocktails (${bottle.cocktails.size})",
-                    fontSize = 15.sp,
+                    text = "Matching Cocktails (${bottle.cocktails.size}) — Tap to View/Edit",
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = GoldHighlight
                 )
@@ -219,6 +217,9 @@ fun BottleDetailPane(
                             .padding(vertical = 4.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(GlassCardBorder.copy(alpha = 0.3f))
+                            .clickable {
+                                onSelectCocktail(cocktail.copy(bottleId = bottle.id, bottleName = bottle.name))
+                            }
                             .padding(12.dp)
                     ) {
                         Column {

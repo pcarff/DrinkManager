@@ -48,12 +48,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _canMakeOnlyFilter = MutableStateFlow(false)
     val canMakeOnlyFilter: StateFlow<Boolean> = _canMakeOnlyFilter.asStateFlow()
 
+    private val _favoritesOnlyFilter = MutableStateFlow(false)
+    val favoritesOnlyFilter: StateFlow<Boolean> = _favoritesOnlyFilter.asStateFlow()
+
+    private val _activeRecipeDialogCocktail = MutableStateFlow<Cocktail?>(null)
+    val activeRecipeDialogCocktail: StateFlow<Cocktail?> = _activeRecipeDialogCocktail.asStateFlow()
+
     val filteredBottles: StateFlow<List<Bottle>> = combine(
         rawBottles,
         searchQuery,
         selectedCategory,
-        selectedStockFilter
-    ) { bottles, query, category, stock ->
+        selectedStockFilter,
+        favoritesOnlyFilter
+    ) { bottles, query, category, stock, favoritesOnly ->
         bottles.filter { bottle ->
             val matchesQuery = query.isEmpty() ||
                     bottle.name.contains(query, ignoreCase = true) ||
@@ -71,22 +78,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 else -> true
             }
 
-            matchesQuery && matchesCategory && matchesStock
+            val matchesFavorite = !favoritesOnly || bottle.isFavorite == 1
+
+            matchesQuery && matchesCategory && matchesStock && matchesFavorite
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val allCocktails: StateFlow<List<Cocktail>> = combine(
         rawBottles,
         searchQuery,
-        canMakeOnlyFilter
-    ) { bottles, query, canMake ->
+        canMakeOnlyFilter,
+        favoritesOnlyFilter
+    ) { bottles, query, canMake, favoritesOnly ->
         val list = mutableListOf<Cocktail>()
         bottles.forEach { bottle ->
             bottle.cocktails.forEach { c ->
                 val fullCocktail = c.copy(bottleId = bottle.id, bottleName = bottle.name)
                 val matchesQuery = query.isEmpty() || c.name.contains(query, ignoreCase = true)
                 val matchesCanMake = !canMake || bottle.stockStatus != "out-of-stock"
-                if (matchesQuery && matchesCanMake) {
+                val matchesFavorite = !favoritesOnly || c.isFavorite
+                if (matchesQuery && matchesCanMake && matchesFavorite) {
                     list.add(fullCocktail)
                 }
             }
@@ -128,23 +139,63 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectCocktail(cocktail: Cocktail?) {
         _selectedCocktail.value = cocktail
+        _activeRecipeDialogCocktail.value = cocktail
     }
 
     fun toggleCanMakeOnly() {
         _canMakeOnlyFilter.value = !_canMakeOnlyFilter.value
     }
 
-    fun updateStockLevel(bottleId: Int, newStockLevel: String) {
+    fun toggleFavoritesOnly() {
+        _favoritesOnlyFilter.value = !_favoritesOnlyFilter.value
+    }
+
+    fun toggleBottleFavorite(bottleId: Int) {
         viewModelScope.launch {
-            repository.updateBottleStockLevel(bottleId, newStockLevel)
-            // Refresh selected bottle reference if it matches
-            _selectedBottle.value = _selectedBottle.value?.let { b ->
-                if (b.id == bottleId) b.copy(stockLevel = newStockLevel) else b
+            repository.toggleBottleFavorite(bottleId)
+        }
+    }
+
+    fun toggleCocktailFavorite(cocktail: Cocktail) {
+        viewModelScope.launch {
+            repository.toggleCocktailFavorite(cocktail.name)
+            if (_activeRecipeDialogCocktail.value?.name.equals(cocktail.name, ignoreCase = true)) {
+                val current = _activeRecipeDialogCocktail.value
+                if (current != null) {
+                    _activeRecipeDialogCocktail.value = current.copy(isFavorite = !current.isFavorite)
+                }
             }
         }
     }
 
-    fun togglePantryItem(itemId: Int) {
+    fun togglePantryFavorite(itemId: Int) {
+        viewModelScope.launch {
+            repository.togglePantryFavorite(itemId)
+        }
+    }
+
+    fun openRecipeDialog(cocktail: Cocktail) {
+        _activeRecipeDialogCocktail.value = cocktail
+    }
+
+    fun closeRecipeDialog() {
+        _activeRecipeDialogCocktail.value = null
+    }
+
+    fun saveRecipe(updated: Cocktail) {
+        viewModelScope.launch {
+            repository.saveEditedCocktail(updated)
+            _activeRecipeDialogCocktail.value = updated
+        }
+    }
+
+    fun updateBottleStock(bottleId: Int, newLevel: String) {
+        viewModelScope.launch {
+            repository.updateBottleStockLevel(bottleId, newLevel)
+        }
+    }
+
+    fun togglePantryStock(itemId: Int) {
         viewModelScope.launch {
             repository.togglePantryStock(itemId)
         }

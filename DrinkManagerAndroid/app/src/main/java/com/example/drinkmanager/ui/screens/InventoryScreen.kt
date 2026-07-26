@@ -36,6 +36,10 @@ import com.example.drinkmanager.theme.AmberPrimary
 import com.example.drinkmanager.theme.GlassCardBg
 import com.example.drinkmanager.theme.TextPrimary
 import com.example.drinkmanager.theme.TextSecondary
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material3.IconButton
+import com.example.drinkmanager.theme.GoldHighlight
 import com.example.drinkmanager.ui.components.GlassCard
 import com.example.drinkmanager.ui.components.QuickStockAdjuster
 import com.example.drinkmanager.ui.components.SearchBarComponent
@@ -53,9 +57,12 @@ fun InventoryListPane(
     onStockFilterChange: (String) -> Unit,
     onSelectBottle: (Bottle) -> Unit,
     onUpdateStockLevel: (Int, String) -> Unit,
+    onToggleFavorite: (Int) -> Unit = {},
+    isFavoritesOnly: Boolean = false,
+    onToggleFavoritesOnly: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val categories = listOf("All", "Bourbon", "Rye", "Scotch", "Tequila", "Gin", "Rum", "Liqueur", "Bitters")
+    val categories = listOf("All", "⭐ Favorites", "Bourbon", "Rye", "Scotch", "Tequila", "Gin", "Rum", "Liqueur", "Bitters")
 
     Column(
         modifier = modifier
@@ -76,12 +83,19 @@ fun InventoryListPane(
             contentPadding = PaddingValues(vertical = 2.dp)
         ) {
             items(categories) { cat ->
-                val isSelected = cat.equals(selectedCategory, ignoreCase = true)
+                val isSelected = if (cat == "⭐ Favorites") isFavoritesOnly else cat.equals(selectedCategory, ignoreCase = true) && !isFavoritesOnly
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(20.dp))
                         .background(if (isSelected) AmberPrimary else GlassCardBg)
-                        .clickable { onCategoryChange(cat) }
+                        .clickable {
+                            if (cat == "⭐ Favorites") {
+                                onToggleFavoritesOnly()
+                            } else {
+                                if (isFavoritesOnly) onToggleFavoritesOnly()
+                                onCategoryChange(cat)
+                            }
+                        }
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text(
@@ -122,7 +136,8 @@ fun InventoryListPane(
                         onClick = { onSelectBottle(bottle) },
                         onStockChange = { newLevel ->
                             onUpdateStockLevel(bottle.id, newLevel)
-                        }
+                        },
+                        onToggleFavorite = { onToggleFavorite(bottle.id) }
                     )
                 }
             }
@@ -135,7 +150,8 @@ fun BottleListItem(
     bottle: Bottle,
     isSelected: Boolean,
     onClick: () -> Unit,
-    onStockChange: (String) -> Unit
+    onStockChange: (String) -> Unit,
+    onToggleFavorite: () -> Unit = {}
 ) {
     GlassCard(
         isSelected = isSelected,
@@ -143,7 +159,7 @@ fun BottleListItem(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Top Row: Bottle Icon + Name + Stock Badge
+            // Top Row: Bottle Icon + Name + Favorite Star + Stock Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -175,7 +191,21 @@ fun BottleListItem(
                     modifier = Modifier.weight(1f)
                 )
 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+
+                IconButton(
+                    onClick = onToggleFavorite,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        if (bottle.isFavorite == 1) Icons.Default.Star else Icons.Outlined.StarBorder,
+                        contentDescription = "Favorite",
+                        tint = if (bottle.isFavorite == 1) GoldHighlight else TextSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
 
                 StockBadge(status = bottle.stockStatus)
             }

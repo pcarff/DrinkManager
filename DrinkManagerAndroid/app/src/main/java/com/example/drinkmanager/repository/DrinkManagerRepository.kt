@@ -170,4 +170,44 @@ class DrinkManagerRepository(private val context: Context) {
             } else item
         }
     }
+
+    suspend fun toggleBottleFavorite(bottleId: Int) = withContext(Dispatchers.IO) {
+        _bottles.value = _bottles.value.map { b ->
+            if (b.id == bottleId) {
+                b.copy(isFavorite = if (b.isFavorite == 1) 0 else 1)
+            } else b
+        }
+    }
+
+    suspend fun toggleCocktailFavorite(cocktailName: String) = withContext(Dispatchers.IO) {
+        _bottles.value = _bottles.value.map { b ->
+            val updatedCocktails = b.cocktails.map { c ->
+                if (c.name.equals(cocktailName, ignoreCase = true)) {
+                    c.copy(isFavorite = !c.isFavorite)
+                } else c
+            }
+            b.copy(cocktails = updatedCocktails)
+        }
+    }
+
+    suspend fun togglePantryFavorite(itemId: Int) = withContext(Dispatchers.IO) {
+        _pantryItems.value = _pantryItems.value.map { item ->
+            if (item.id == itemId) {
+                item.copy(isFavorite = if (item.isFavorite == 1) 0 else 1)
+            } else item
+        }
+    }
+
+    suspend fun saveEditedCocktail(updated: Cocktail) = withContext(Dispatchers.IO) {
+        _bottles.value = _bottles.value.map { bottle ->
+            if (bottle.id == updated.bottleId || bottle.name.equals(updated.bottleName, ignoreCase = true)) {
+                val updatedCocktails = bottle.cocktails.map { c ->
+                    if (c.name.equals(updated.name, ignoreCase = true) || c.id == updated.id) {
+                        updated
+                    } else c
+                }
+                bottle.copy(cocktails = updatedCocktails)
+            } else bottle
+        }
+    }
 }
