@@ -213,9 +213,9 @@ fun StockLevelSelector(
 ) {
     val levels = listOf(
         Pair("full", "Full"),
-        Pair("high", "3/4"),
-        Pair("medium", "1/2"),
-        Pair("low", "1/4"),
+        Pair("three-quarter", "¾"),
+        Pair("half", "½"),
+        Pair("quarter", "¼"),
         Pair("empty", "Empty")
     )
 
@@ -229,7 +229,7 @@ fun StockLevelSelector(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         levels.forEach { (levelKey, levelLabel) ->
-            val isSelected = currentLevel.equals(levelKey, ignoreCase = true)
+            val isSelected = normalizeStockLevel(currentLevel) == levelKey
             val btnBg = if (isSelected) AmberPrimary else Color.Transparent
             val btnText = if (isSelected) Color.Black else TextSecondary
 
@@ -253,14 +253,27 @@ fun StockLevelSelector(
     }
 }
 
+/** Map any legacy or mixed stock level key to the canonical server key */
+fun normalizeStockLevel(level: String): String {
+    return when (level.lowercase()) {
+        "full" -> "full"
+        "high", "three-quarter", "3/4" -> "three-quarter"
+        "medium", "half", "1/2" -> "half"
+        "low", "quarter", "1/4", "almost-empty" -> "quarter"
+        "empty" -> "empty"
+        else -> "full"
+    }
+}
+
 @Composable
 fun QuickStockAdjuster(
     currentLevel: String,
     onLevelChange: (String) -> Unit
 ) {
-    val levels = listOf("empty", "low", "medium", "high", "full")
-    val displayNames = mapOf("empty" to "Empty", "low" to "1/4", "medium" to "1/2", "high" to "3/4", "full" to "Full")
-    val currentIndex = levels.indexOf(currentLevel.lowercase()).coerceAtLeast(0)
+    val levels = listOf("empty", "quarter", "half", "three-quarter", "full")
+    val displayNames = mapOf("empty" to "Empty", "quarter" to "¼", "half" to "½", "three-quarter" to "¾", "full" to "Full")
+    val normalized = normalizeStockLevel(currentLevel)
+    val currentIndex = levels.indexOf(normalized).coerceAtLeast(0)
 
     Row(
         verticalAlignment = Alignment.CenterVertically
@@ -300,3 +313,4 @@ fun QuickStockAdjuster(
         }
     }
 }
+

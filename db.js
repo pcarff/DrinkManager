@@ -315,8 +315,8 @@ module.exports = {
 
   updateBottleStock(id, stockLevel) {
     let stockStatus = 'in-stock';
-    if (stockLevel === 'empty') stockStatus = 'empty';
-    else if (stockLevel === 'quarter' || stockLevel === 'almost-empty') stockStatus = 'low';
+    if (stockLevel === 'empty') stockStatus = 'out-of-stock';
+    else if (stockLevel === 'quarter' || stockLevel === 'almost-empty' || stockLevel === 'low') stockStatus = 'low';
 
     db.prepare('UPDATE bottles SET stock_level = ?, stock_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
       .run(stockLevel, stockStatus, id);

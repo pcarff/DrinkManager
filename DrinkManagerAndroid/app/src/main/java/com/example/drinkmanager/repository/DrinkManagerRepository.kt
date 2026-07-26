@@ -210,7 +210,7 @@ class DrinkManagerRepository(private val context: Context) {
     suspend fun updateBottleStockLevel(bottleId: Int, newStockLevel: String): Boolean = withContext(Dispatchers.IO) {
         val newStatus = when (newStockLevel.lowercase()) {
             "empty" -> "out-of-stock"
-            "low" -> "low"
+            "quarter", "almost-empty", "low" -> "low"
             else -> "in-stock"
         }
 
