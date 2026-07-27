@@ -324,6 +324,14 @@ module.exports = {
     return this.getBottleById(id);
   },
 
+  findDuplicateBottle(name) {
+    const row = db.prepare('SELECT id FROM bottles WHERE LOWER(name) = LOWER(?)').get(name);
+    if (row) {
+      return this.getBottleById(row.id);
+    }
+    return null;
+  },
+
   createBottle(data) {
     const maxIdRow = db.prepare('SELECT MAX(id) as maxId FROM bottles').get();
     const newId = (maxIdRow && maxIdRow.maxId) ? maxIdRow.maxId + 1 : 1;

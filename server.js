@@ -99,6 +99,20 @@ const server = http.createServer((req, res) => {
         return;
       }
       try {
+        // Check for duplicates unless force flag is set
+        if (!payload.force) {
+          const existing = dbModule.findDuplicateBottle(payload.name);
+          if (existing) {
+            console.log(`Duplicate bottle detected: "${payload.name}" matches existing id=${existing.id}`);
+            res.writeHead(409, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              error: 'duplicate',
+              message: `A bottle named "${existing.name}" already exists`,
+              existingBottle: existing
+            }));
+            return;
+          }
+        }
         const newBottle = dbModule.createBottle(payload);
         res.writeHead(201, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(newBottle));
@@ -509,7 +523,7 @@ const server = http.createServer((req, res) => {
         console.log(`Saved scanned bottle photo: ${finalFilename}`);
 
         // Call Gemini API for image analysis
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
         const prompt = `You are an expert liquor and spirits identifier. Analyze this bottle image and extract the following information.
 Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 {

@@ -253,6 +253,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Duplicate detection state
+    private val _duplicateWarning = MutableStateFlow<String?>(null)
+    val duplicateWarning: StateFlow<String?> = _duplicateWarning.asStateFlow()
+
+    private var _pendingBottleData: MutableMap<String, Any?>? = null
+
+    fun clearDuplicateWarning() {
+        _duplicateWarning.value = null
+        _pendingBottleData = null
+    }
+
     fun saveNewBottle(formData: com.example.drinkmanager.ui.screens.BottleFormData) {
         viewModelScope.launch {
             val data = mutableMapOf<String, Any?>(
@@ -266,10 +277,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 "notes" to formData.notes,
                 "photoFilename" to formData.photoFilename
             )
-            val success = repository.createNewBottle(data)
-            if (success) {
+            when (val result = repository.createNewBottle(data)) {
+                is DrinkManagerRepository.CreateBottleResult.Success -> {
+                    _showAddBottle.value = false
+                    _duplicateWarning.value = null
+                    _pendingBottleData = null
+                }
+                is DrinkManagerRepository.CreateBottleResult.Duplicate -> {
+                    _duplicateWarning.value = result.existingName
+                    _pendingBottleData = data
+                }
+                is DrinkManagerRepository.CreateBottleResult.Error -> {
+                    // Could expose error state if needed
+                    android.util.Log.e("MainVM", "Create bottle error: ${result.message}")
+                }
+            }
+        }
+    }
+
+    fun forceAddBottle() {
+        val data = _pendingBottleData ?: return
+        viewModelScope.launch {
+            val result = repository.createNewBottle(data, force = true)
+            if (result is DrinkManagerRepository.CreateBottleResult.Success) {
                 _showAddBottle.value = false
             }
+            _duplicateWarning.value = null
+            _pendingBottleData = null
         }
     }
 }

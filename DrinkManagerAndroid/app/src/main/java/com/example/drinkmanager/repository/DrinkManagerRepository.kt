@@ -387,7 +387,13 @@ class DrinkManagerRepository(private val context: Context) {
     /**
      * Create a new bottle on the server and refresh the local list.
      */
-    suspend fun createNewBottle(data: Map<String, Any?>): Boolean = withContext(Dispatchers.IO) {
+    sealed class CreateBottleResult {
+        data object Success : CreateBottleResult()
+        data class Duplicate(val existingName: String) : CreateBottleResult()
+        data class Error(val message: String) : CreateBottleResult()
+    }
+
+    suspend fun createNewBottle(data: Map<String, Any?>, force: Boolean = false): CreateBottleResult = withContext(Dispatchers.IO) {
         try {
             val urlString = "${_serverConfig.value.baseUrl}/api/bottles"
             val connection = URL(urlString).openConnection() as HttpURLConnection
@@ -412,20 +418,32 @@ class DrinkManagerRepository(private val context: Context) {
                 append("\"photoFilename\":\"${escapeJson(data["photoFilename"]?.toString() ?: "placeholder.jpg")}\",")
                 append("\"stockLevel\":\"full\",")
                 append("\"stockStatus\":\"in-stock\"")
+                if (force) append(",\"force\":true")
                 append("}")
             }
 
             OutputStreamWriter(connection.outputStream).use { it.write(json) }
 
-            val success = connection.responseCode == 201 || connection.responseCode == 200
-            if (success) {
-                // Refresh bottle list from server
-                refreshData()
+            return@withContext when (connection.responseCode) {
+                200, 201 -> {
+                    refreshData()
+                    CreateBottleResult.Success
+                }
+                409 -> {
+                    val errText = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "{}"
+                    val jsonObj = kotlinx.serialization.json.Json.parseToJsonElement(errText)
+                    val existingName = if (jsonObj is kotlinx.serialization.json.JsonObject) {
+                        jsonObj["message"]?.let {
+                            if (it is kotlinx.serialization.json.JsonPrimitive) it.content else null
+                        } ?: "A bottle with this name already exists"
+                    } else "A bottle with this name already exists"
+                    CreateBottleResult.Duplicate(existingName)
+                }
+                else -> CreateBottleResult.Error("Server returned ${connection.responseCode}")
             }
-            return@withContext success
         } catch (e: Exception) {
             android.util.Log.e("DrinkRepo", "Create bottle error", e)
-            return@withContext false
+            return@withContext CreateBottleResult.Error(e.message ?: "Unknown error")
         }
     }
 

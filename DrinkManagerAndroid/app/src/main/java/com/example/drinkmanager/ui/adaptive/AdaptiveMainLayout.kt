@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.LocalBar
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -91,6 +92,7 @@ fun MainNavigation(viewModel: MainViewModel) {
 
     val activeRecipeDialogCocktail by viewModel.activeRecipeDialogCocktail.collectAsState()
     val showAddBottle by viewModel.showAddBottle.collectAsState()
+    val duplicateWarning by viewModel.duplicateWarning.collectAsState()
 
     val pantryItems by viewModel.pantryItems.collectAsState()
     val serverConfig by viewModel.serverConfig.collectAsState()
@@ -403,6 +405,37 @@ fun MainNavigation(viewModel: MainViewModel) {
                 onSaveBottle = { formData ->
                     viewModel.saveNewBottle(formData)
                 }
+            )
+        }
+
+        // DUPLICATE BOTTLE WARNING DIALOG
+        if (duplicateWarning != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearDuplicateWarning() },
+                title = {
+                    Text("Duplicate Detected", color = TextPrimary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                },
+                text = {
+                    Text(
+                        duplicateWarning ?: "",
+                        color = TextSecondary
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = { viewModel.forceAddBottle() }
+                    ) {
+                        Text("Add Anyway", color = AmberPrimary)
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = { viewModel.clearDuplicateWarning() }
+                    ) {
+                        Text("Cancel", color = TextSecondary)
+                    }
+                },
+                containerColor = DarkSurface
             )
         }
     }
