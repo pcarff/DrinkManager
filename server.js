@@ -101,7 +101,7 @@ const server = http.createServer((req, res) => {
       try {
         // Check for duplicates unless force flag is set
         if (!payload.force) {
-          const existing = dbModule.findDuplicateBottle(payload.name);
+          const existing = dbModule.findDuplicateBottle(payload.name, payload.brand);
           if (existing) {
             console.log(`Duplicate bottle detected: "${payload.name}" matches existing id=${existing.id}`);
             res.writeHead(409, { 'Content-Type': 'application/json' });

@@ -324,10 +324,38 @@ module.exports = {
     return this.getBottleById(id);
   },
 
-  findDuplicateBottle(name) {
-    const row = db.prepare('SELECT id FROM bottles WHERE LOWER(name) = LOWER(?)').get(name);
-    if (row) {
-      return this.getBottleById(row.id);
+  findDuplicateBottle(name, brand) {
+    if (!name) return null;
+    // 1. Exact match (case-insensitive)
+    const exact = db.prepare('SELECT id FROM bottles WHERE LOWER(name) = LOWER(?)').get(name.trim());
+    if (exact) {
+      return this.getBottleById(exact.id);
+    }
+
+    // 2. Fuzzy match against all existing bottles
+    const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+    const targetNorm = norm(name);
+    const targetWords = targetNorm.split(' ').filter(w => w.length > 2);
+    if (targetWords.length === 0) return null;
+
+    const allBottles = db.prepare('SELECT id, name, brand FROM bottles').all();
+    for (const b of allBottles) {
+      const bNorm = norm(b.name);
+      if (bNorm === targetNorm) return this.getBottleById(b.id);
+
+      const bWords = bNorm.split(' ').filter(w => w.length > 2);
+      if (bWords.length === 0) continue;
+
+      // Calculate token overlap
+      const common = targetWords.filter(w => bWords.includes(w));
+      const minLength = Math.min(targetWords.length, bWords.length);
+      const overlap = common.length / minLength;
+
+      // If >60% token overlap OR one name is a substring of the other
+      if ((overlap >= 0.6 && common.length >= 2) || (targetNorm.includes(bNorm) && bNorm.length > 8) || (bNorm.includes(targetNorm) && targetNorm.length > 8)) {
+        console.log(`Fuzzy duplicate match: "${name}" matched existing bottle "${b.name}" (id: ${b.id}, overlap: ${(overlap*100).toFixed(0)}%)`);
+        return this.getBottleById(b.id);
+      }
     }
     return null;
   },

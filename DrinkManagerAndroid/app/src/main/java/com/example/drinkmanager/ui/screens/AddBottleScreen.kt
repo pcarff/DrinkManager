@@ -93,6 +93,7 @@ fun AddBottleScreen(
     onDismiss: () -> Unit,
     onAnalyzeImage: (String, (BottleFormData?) -> Unit) -> Unit,
     onSaveBottle: (BottleFormData) -> Unit,
+    existingBottles: List<com.example.drinkmanager.model.Bottle> = emptyList(),
     isAnalyzing: Boolean = false
 ) {
     val context = LocalContext.current
@@ -306,6 +307,27 @@ fun AddBottleScreen(
                 }
 
                 AddBottleState.REVIEW_FORM -> {
+                    // Check for duplicate/similar bottle in real-time
+                    val matchingBottle = remember(formData.name, existingBottles) {
+                        if (formData.name.isBlank()) null
+                        else {
+                            val norm = { s: String -> s.lowercase().replace(Regex("[^a-z0-9]"), " ").replace(Regex("\\s+"), " ").trim() }
+                            val target = norm(formData.name)
+                            val targetWords = target.split(" ").filter { it.length > 2 }
+                            existingBottles.find { b ->
+                                val bNorm = norm(b.name)
+                                if (bNorm == target) true
+                                else {
+                                    val bWords = bNorm.split(" ").filter { it.length > 2 }
+                                    val common = targetWords.filter { bWords.contains(it) }
+                                    val minLen = minOf(targetWords.size, bWords.size)
+                                    val overlap = if (minLen > 0) common.size.toDouble() / minLen else 0.0
+                                    (overlap >= 0.6 && common.size >= 2) || (target.length > 8 && bNorm.contains(target)) || (bNorm.length > 8 && target.contains(bNorm))
+                                }
+                            }
+                        }
+                    }
+
                     // Review and edit form
                     Column(
                         modifier = Modifier
@@ -321,6 +343,27 @@ fun AddBottleScreen(
                                     fontSize = 13.sp,
                                     color = Color(0xFFFF6B6B)
                                 )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+
+                        // Duplicate warning banner if similar bottle exists
+                        if (matchingBottle != null) {
+                            GlassCard(modifier = Modifier.fillMaxWidth()) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Text(
+                                        text = "⚠️ Similar Bottle Already In Bar",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = GoldHighlight
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "\"${matchingBottle.name}\" is already in your inventory list.",
+                                        fontSize = 12.sp,
+                                        color = TextPrimary
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                         }

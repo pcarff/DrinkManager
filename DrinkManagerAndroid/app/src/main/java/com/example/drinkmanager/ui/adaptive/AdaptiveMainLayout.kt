@@ -404,7 +404,8 @@ fun MainNavigation(viewModel: MainViewModel) {
                 },
                 onSaveBottle = { formData ->
                     viewModel.saveNewBottle(formData)
-                }
+                },
+                existingBottles = rawBottles
             )
         }
 
