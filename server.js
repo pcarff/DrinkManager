@@ -522,8 +522,8 @@ const server = http.createServer((req, res) => {
         fs.writeFileSync(targetPath, buffer);
         console.log(`Saved scanned bottle photo: ${finalFilename}`);
 
-        // Call Gemini API for image analysis
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        // Call Gemini API for image analysis with model fallback
+        const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-flash-latest'];
         const prompt = `You are an expert liquor and spirits identifier. Analyze this bottle image and extract the following information.
 Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 {
@@ -556,17 +556,33 @@ If you cannot determine a field, use null. For category, pick the closest match 
           }
         });
 
-        const geminiResp = await fetch(geminiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: geminiBody
-        });
+        let geminiResp = null;
+        let lastErrorText = '';
+        for (const modelName of candidateModels) {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          try {
+            const resp = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: geminiBody
+            });
+            if (resp.ok) {
+              geminiResp = resp;
+              console.log(`Gemini image analysis succeeded with model: ${modelName}`);
+              break;
+            } else {
+              lastErrorText = await resp.text();
+              console.warn(`Gemini model ${modelName} returned status ${resp.status}: ${lastErrorText}`);
+            }
+          } catch (mErr) {
+            console.warn(`Gemini model ${modelName} request error:`, mErr);
+          }
+        }
 
-        if (!geminiResp.ok) {
-          const errText = await geminiResp.text();
-          console.error('Gemini API error:', geminiResp.status, errText);
+        if (!geminiResp) {
+          console.error('All Gemini candidate models failed. Last error:', lastErrorText);
           res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Gemini API request failed', details: errText, photoFilename: finalFilename }));
+          res.end(JSON.stringify({ error: 'Gemini API request failed', details: lastErrorText, photoFilename: finalFilename }));
           return;
         }
 

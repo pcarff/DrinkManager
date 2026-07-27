@@ -100,30 +100,18 @@ fun AddBottleScreen(
     var formData by remember { mutableStateOf(BottleFormData()) }
     var analysisError by remember { mutableStateOf<String?>(null) }
 
-    // Create temp file for camera
-    val tempFile = remember {
-        val dir = File(context.cacheDir, "bottle_images")
-        dir.mkdirs()
-        File(dir, "bottle_capture_${System.currentTimeMillis()}.jpg")
-    }
-
-    val photoUri = remember {
-        FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            tempFile
-        )
-    }
+    var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
     // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) {
-            capturedImageUri = photoUri
+        val uri = currentPhotoUri
+        if (success && uri != null) {
+            capturedImageUri = uri
             // Read and base64-encode the image
             try {
-                val bytes = context.contentResolver.openInputStream(photoUri)?.use { it.readBytes() }
+                val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
                 if (bytes != null) {
                     imageBase64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
                     screenState = AddBottleState.ANALYZING
@@ -150,16 +138,26 @@ fun AddBottleScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            cameraLauncher.launch(photoUri)
+        if (granted && currentPhotoUri != null) {
+            cameraLauncher.launch(currentPhotoUri!!)
         } else {
             Toast.makeText(context, "Camera permission required", Toast.LENGTH_SHORT).show()
         }
     }
 
     fun launchCamera() {
+        val dir = File(context.cacheDir, "bottle_images")
+        dir.mkdirs()
+        val tempFile = File(dir, "bottle_capture_${System.currentTimeMillis()}.jpg")
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            tempFile
+        )
+        currentPhotoUri = uri
+
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            cameraLauncher.launch(photoUri)
+            cameraLauncher.launch(uri)
         } else {
             permissionLauncher.launch(Manifest.permission.CAMERA)
         }
