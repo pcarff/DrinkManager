@@ -244,7 +244,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     abvPercent = result["abvPercent"]?.toString()?.takeIf { it != "null" } ?: "",
                     volume = result["volume"]?.toString()?.takeIf { it != "null" } ?: "",
                     notes = result["notes"]?.toString() ?: "",
-                    photoFilename = result["photoFilename"]?.toString() ?: ""
+                    photoFilename = result["photoFilename"]?.toString() ?: "",
+                    cocktailsRaw = result["cocktails"]?.toString() ?: "",
+                    mocktailRaw = result["mocktail"]?.toString() ?: ""
                 )
                 callback(formData)
             } else {
@@ -275,7 +277,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 "abvPercent" to formData.abvPercent.toDoubleOrNull(),
                 "volume" to formData.volume,
                 "notes" to formData.notes,
-                "photoFilename" to formData.photoFilename
+                "photoFilename" to formData.photoFilename,
+                "cocktailsRaw" to formData.cocktailsRaw,
+                "mocktailRaw" to formData.mocktailRaw
             )
             when (val result = repository.createNewBottle(data)) {
                 is DrinkManagerRepository.CreateBottleResult.Success -> {

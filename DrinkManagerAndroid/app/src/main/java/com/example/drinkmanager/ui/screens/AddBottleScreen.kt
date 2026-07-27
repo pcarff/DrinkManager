@@ -77,7 +77,9 @@ data class BottleFormData(
     val abvPercent: String = "",
     val volume: String = "",
     val notes: String = "",
-    val photoFilename: String = ""
+    val photoFilename: String = "",
+    val cocktailsRaw: String = "",
+    val mocktailRaw: String = ""
 )
 
 enum class AddBottleState {

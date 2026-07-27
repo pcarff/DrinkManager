@@ -357,6 +357,18 @@ module.exports = {
       data.stockLevel || 'full'
     );
 
+    if (Array.isArray(data.cocktails)) {
+      for (const c of data.cocktails) {
+        if (c && c.name) {
+          this.addCocktail(newId, c);
+        }
+      }
+    }
+
+    if (data.mocktail && data.mocktail.name) {
+      this.updateMocktail(newId, data.mocktail);
+    }
+
     return this.getBottleById(newId);
   },
 

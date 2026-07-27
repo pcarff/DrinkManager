@@ -418,6 +418,14 @@ class DrinkManagerRepository(private val context: Context) {
                 append("\"photoFilename\":\"${escapeJson(data["photoFilename"]?.toString() ?: "placeholder.jpg")}\",")
                 append("\"stockLevel\":\"full\",")
                 append("\"stockStatus\":\"in-stock\"")
+                val rawCocktails = data["cocktailsRaw"]?.toString()
+                if (!rawCocktails.isNullOrBlank()) {
+                    append(",\"cocktails\":$rawCocktails")
+                }
+                val rawMocktail = data["mocktailRaw"]?.toString()
+                if (!rawMocktail.isNullOrBlank()) {
+                    append(",\"mocktail\":$rawMocktail")
+                }
                 if (force) append(",\"force\":true")
                 append("}")
             }

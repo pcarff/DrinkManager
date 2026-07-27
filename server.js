@@ -524,7 +524,7 @@ const server = http.createServer((req, res) => {
 
         // Call Gemini API for image analysis with model fallback
         const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-flash-latest'];
-        const prompt = `You are an expert liquor and spirits identifier. Analyze this bottle image and extract the following information.
+        const prompt = `You are an expert liquor and spirits identifier. Analyze this bottle image, extract the bottle details, and generate 2 to 3 recommended cocktail recipes that prominently feature this spirit, plus 1 non-alcoholic mocktail.
 Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
 {
   "name": "Full product name as shown on the label",
@@ -534,7 +534,25 @@ Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
   "proof": numeric proof value or null if not visible,
   "abvPercent": numeric ABV percentage or null if not visible,
   "volume": "bottle volume as string like '750ml', '1L', etc. or null if not visible",
-  "notes": "Brief tasting notes or description from the label if visible, otherwise a brief description of the spirit"
+  "notes": "Brief tasting notes or description from the label if visible, otherwise a brief description of the spirit",
+  "cocktails": [
+    {
+      "name": "Cocktail Name",
+      "glass": "Rocks Glass",
+      "ingredients": [
+        "2 oz Product Name",
+        "0.75 oz Ingredient",
+        "2 dashes Bitters"
+      ],
+      "instructions": "Mixing instructions."
+    }
+  ],
+  "mocktail": {
+    "name": "Mocktail Name",
+    "glass": "Highball Glass",
+    "ingredients": ["3 oz Ginger Beer", "1 oz Lime Juice"],
+    "instructions": "Mixing instructions."
+  }
 }
 If you cannot determine a field, use null. For category, pick the closest match from the list.`;
 
@@ -702,9 +720,89 @@ function serveStaticFile(filePath, res) {
   });
 }
 
+async function generateMissingCocktailsForBottles() {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) return;
+
+  const bottles = dbModule.getAllBottles();
+  const missingBottles = bottles.filter(b => (!b.cocktails || b.cocktails.length === 0));
+  if (missingBottles.length === 0) return;
+
+  console.log(`Found ${missingBottles.length} bottle(s) without cocktails. Generating recommendations via Gemini...`);
+
+  const candidateModels = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-flash-latest'];
+
+  for (const bottle of missingBottles) {
+    try {
+      console.log(`Generating cocktail recommendations for: "${bottle.name}" (ID: ${bottle.id})...`);
+      const prompt = `Generate 2 to 3 classic or signature cocktail recipes that prominently feature "${bottle.name}" (Category: ${bottle.category}, Brand: ${bottle.brand || 'Unknown'}). Also generate 1 non-alcoholic mocktail.
+Return ONLY valid JSON in this exact structure:
+{
+  "cocktails": [
+    {
+      "name": "Cocktail Name",
+      "glass": "Rocks Glass",
+      "ingredients": [
+        "2 oz ${bottle.name}",
+        "0.75 oz Sweet Vermouth",
+        "2 dashes Bitters"
+      ],
+      "instructions": "Stir with ice and strain into glass."
+    }
+  ],
+  "mocktail": {
+    "name": "Mocktail Name",
+    "glass": "Highball Glass",
+    "ingredients": ["3 oz Ginger Beer", "1 oz Lime Juice"],
+    "instructions": "Build in glass over ice."
+  }
+}`;
+
+      const geminiBody = JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 1024 }
+      });
+
+      let responseText = null;
+      for (const modelName of candidateModels) {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+        try {
+          const resp = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: geminiBody
+          });
+          if (resp.ok) {
+            const data = await resp.json();
+            responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (responseText) break;
+          }
+        } catch (_) {}
+      }
+
+      if (responseText) {
+        responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+        const parsed = JSON.parse(responseText);
+        if (Array.isArray(parsed.cocktails)) {
+          for (const c of parsed.cocktails) {
+            if (c && c.name) dbModule.addCocktail(bottle.id, c);
+          }
+        }
+        if (parsed.mocktail && parsed.mocktail.name) {
+          dbModule.updateMocktail(bottle.id, parsed.mocktail);
+        }
+        console.log(`Successfully generated ${parsed.cocktails?.length || 0} cocktails for "${bottle.name}"`);
+      }
+    } catch (err) {
+      console.error(`Failed to generate cocktails for "${bottle.name}":`, err.message);
+    }
+  }
+}
+
 server.listen(PORT, HOST, () => {
   console.log(`====================================================`);
   console.log(`🍸 DrinkManager Server running at http://${HOST}:${PORT}`);
   console.log(`📱 Available on local network for Android app access`);
   console.log(`====================================================`);
+  generateMissingCocktailsForBottles().catch(err => console.error("Cocktail backfill error:", err));
 });
