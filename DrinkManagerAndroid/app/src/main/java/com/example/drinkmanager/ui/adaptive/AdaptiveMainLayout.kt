@@ -14,16 +14,20 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.LocalBar
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,6 +67,7 @@ import com.example.drinkmanager.ui.screens.InventoryListPane
 import com.example.drinkmanager.ui.screens.PantryScreen
 import com.example.drinkmanager.model.Cocktail
 import com.example.drinkmanager.ui.screens.RecipeDetailDialog
+import com.example.drinkmanager.ui.screens.AddBottleScreen
 import com.example.drinkmanager.ui.screens.SettingsScreen
 import com.example.drinkmanager.viewmodel.MainViewModel
 
@@ -85,6 +90,7 @@ fun MainNavigation(viewModel: MainViewModel) {
     val favoritesOnlyFilter by viewModel.favoritesOnlyFilter.collectAsState()
 
     val activeRecipeDialogCocktail by viewModel.activeRecipeDialogCocktail.collectAsState()
+    val showAddBottle by viewModel.showAddBottle.collectAsState()
 
     val pantryItems by viewModel.pantryItems.collectAsState()
     val serverConfig by viewModel.serverConfig.collectAsState()
@@ -190,6 +196,18 @@ fun MainNavigation(viewModel: MainViewModel) {
                                         onSelectCocktail = { viewModel.openRecipeDialog(it) },
                                         modifier = Modifier.weight(0.54f)
                                     )
+                                }
+
+                                // FAB for adding bottles
+                                FloatingActionButton(
+                                    onClick = { viewModel.showAddBottleDialog() },
+                                    containerColor = AmberPrimary,
+                                    contentColor = Color.Black,
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .offset(x = (-16).dp, y = (-16).dp)
+                                ) {
+                                    Icon(Icons.Default.CameraAlt, contentDescription = "Scan Bottle")
                                 }
                             }
                             1 -> {
@@ -298,24 +316,38 @@ fun MainNavigation(viewModel: MainViewModel) {
                     } else {
                         when (selectedTab) {
                             0 -> {
-                                InventoryListPane(
-                                    bottles = filteredBottles,
-                                    selectedBottle = selectedBottle,
-                                    searchQuery = searchQuery,
-                                    onSearchChange = { viewModel.setSearchQuery(it) },
-                                    selectedCategory = selectedCategory,
-                                    onCategoryChange = { viewModel.selectCategory(it) },
-                                    selectedStockFilter = selectedStockFilter,
-                                    onStockFilterChange = { viewModel.selectStockFilter(it) },
-                                    onSelectBottle = { bottle ->
-                                        viewModel.selectBottle(bottle)
-                                        showMobileDetailView = true
-                                    },
-                                    onUpdateStockLevel = { id, lvl -> viewModel.updateBottleStock(id, lvl) },
-                                    onToggleFavorite = { viewModel.toggleBottleFavorite(it) },
-                                    isFavoritesOnly = favoritesOnlyFilter,
-                                    onToggleFavoritesOnly = { viewModel.toggleFavoritesOnly() }
-                                )
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    InventoryListPane(
+                                        bottles = filteredBottles,
+                                        selectedBottle = selectedBottle,
+                                        searchQuery = searchQuery,
+                                        onSearchChange = { viewModel.setSearchQuery(it) },
+                                        selectedCategory = selectedCategory,
+                                        onCategoryChange = { viewModel.selectCategory(it) },
+                                        selectedStockFilter = selectedStockFilter,
+                                        onStockFilterChange = { viewModel.selectStockFilter(it) },
+                                        onSelectBottle = { bottle ->
+                                            viewModel.selectBottle(bottle)
+                                            showMobileDetailView = true
+                                        },
+                                        onUpdateStockLevel = { id, lvl -> viewModel.updateBottleStock(id, lvl) },
+                                        onToggleFavorite = { viewModel.toggleBottleFavorite(it) },
+                                        isFavoritesOnly = favoritesOnlyFilter,
+                                        onToggleFavoritesOnly = { viewModel.toggleFavoritesOnly() }
+                                    )
+
+                                    // FAB for adding bottles (mobile)
+                                    FloatingActionButton(
+                                        onClick = { viewModel.showAddBottleDialog() },
+                                        containerColor = AmberPrimary,
+                                        contentColor = Color.Black,
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(16.dp)
+                                    ) {
+                                        Icon(Icons.Default.CameraAlt, contentDescription = "Scan Bottle")
+                                    }
+                                }
                             }
                             1 -> {
                                 CocktailsScreen(
@@ -358,6 +390,19 @@ fun MainNavigation(viewModel: MainViewModel) {
                 onDismiss = { viewModel.closeRecipeDialog() },
                 onToggleFavorite = { viewModel.toggleCocktailFavorite(it) },
                 onSaveRecipe = { viewModel.saveRecipe(it) }
+            )
+        }
+
+        // ADD BOTTLE VIA CAMERA SCAN DIALOG
+        if (showAddBottle) {
+            AddBottleScreen(
+                onDismiss = { viewModel.hideAddBottleDialog() },
+                onAnalyzeImage = { base64, callback ->
+                    viewModel.analyzeBottleImage(base64, callback)
+                },
+                onSaveBottle = { formData ->
+                    viewModel.saveNewBottle(formData)
+                }
             )
         }
     }

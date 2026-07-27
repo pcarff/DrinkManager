@@ -54,6 +54,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeRecipeDialogCocktail = MutableStateFlow<Cocktail?>(null)
     val activeRecipeDialogCocktail: StateFlow<Cocktail?> = _activeRecipeDialogCocktail.asStateFlow()
 
+    private val _showAddBottle = MutableStateFlow(false)
+    val showAddBottle: StateFlow<Boolean> = _showAddBottle.asStateFlow()
+
     val filteredBottles: StateFlow<List<Bottle>> = combine(
         rawBottles,
         searchQuery,
@@ -218,5 +221,55 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun saveServerUrl(newUrl: String) {
         repository.updateServerUrl(newUrl)
         refreshServerData()
+    }
+
+    fun showAddBottleDialog() {
+        _showAddBottle.value = true
+    }
+
+    fun hideAddBottleDialog() {
+        _showAddBottle.value = false
+    }
+
+    fun analyzeBottleImage(imageBase64: String, callback: (com.example.drinkmanager.ui.screens.BottleFormData?) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.analyzeBottleImage(imageBase64)
+            if (result != null) {
+                val formData = com.example.drinkmanager.ui.screens.BottleFormData(
+                    name = result["name"]?.toString() ?: "",
+                    brand = result["brand"]?.toString() ?: "",
+                    category = result["category"]?.toString() ?: "",
+                    subCategory = result["subCategory"]?.toString() ?: "",
+                    proof = result["proof"]?.toString()?.takeIf { it != "null" } ?: "",
+                    abvPercent = result["abvPercent"]?.toString()?.takeIf { it != "null" } ?: "",
+                    volume = result["volume"]?.toString()?.takeIf { it != "null" } ?: "",
+                    notes = result["notes"]?.toString() ?: "",
+                    photoFilename = result["photoFilename"]?.toString() ?: ""
+                )
+                callback(formData)
+            } else {
+                callback(null)
+            }
+        }
+    }
+
+    fun saveNewBottle(formData: com.example.drinkmanager.ui.screens.BottleFormData) {
+        viewModelScope.launch {
+            val data = mutableMapOf<String, Any?>(
+                "name" to formData.name,
+                "brand" to formData.brand,
+                "category" to formData.category,
+                "subCategory" to formData.subCategory,
+                "proof" to formData.proof.toDoubleOrNull(),
+                "abvPercent" to formData.abvPercent.toDoubleOrNull(),
+                "volume" to formData.volume,
+                "notes" to formData.notes,
+                "photoFilename" to formData.photoFilename
+            )
+            val success = repository.createNewBottle(data)
+            if (success) {
+                _showAddBottle.value = false
+            }
+        }
     }
 }

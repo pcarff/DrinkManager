@@ -334,4 +334,107 @@ class DrinkManagerRepository(private val context: Context) {
             } else bottle
         }
     }
+
+    /**
+     * Send a base64-encoded bottle image to the server for AI analysis.
+     * Returns a map of extracted bottle metadata, or null on failure.
+     */
+    suspend fun analyzeBottleImage(imageBase64: String): Map<String, Any?>? = withContext(Dispatchers.IO) {
+        try {
+            val urlString = "${_serverConfig.value.baseUrl}/api/analyze-bottle"
+            val connection = URL(urlString).openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 60000 // 60s — Gemini can take time
+            connection.readTimeout = 60000
+
+            val payload = buildString {
+                append("{\"imageBase64\":\"")
+                append(imageBase64)
+                append("\"}")
+            }
+            OutputStreamWriter(connection.outputStream).use { it.write(payload) }
+
+            if (connection.responseCode == 200) {
+                val responseText = connection.inputStream.bufferedReader().use { it.readText() }
+                val map = mutableMapOf<String, Any?>()
+                // Simple JSON parsing using kotlinx.serialization
+                val jsonObj = kotlinx.serialization.json.Json.parseToJsonElement(responseText)
+                if (jsonObj is kotlinx.serialization.json.JsonObject) {
+                    for ((key, value) in jsonObj) {
+                        map[key] = when (value) {
+                            is kotlinx.serialization.json.JsonPrimitive -> {
+                                if (value.isString) value.content
+                                else value.content // numbers come as strings too
+                            }
+                            else -> value.toString()
+                        }
+                    }
+                }
+                return@withContext map
+            } else {
+                val errText = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "Unknown error"
+                android.util.Log.e("DrinkRepo", "Analyze failed ${connection.responseCode}: $errText")
+                return@withContext null
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("DrinkRepo", "Analyze bottle error", e)
+            return@withContext null
+        }
+    }
+
+    /**
+     * Create a new bottle on the server and refresh the local list.
+     */
+    suspend fun createNewBottle(data: Map<String, Any?>): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val urlString = "${_serverConfig.value.baseUrl}/api/bottles"
+            val connection = URL(urlString).openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.doOutput = true
+            connection.connectTimeout = 10000
+
+            // Build JSON payload
+            val json = buildString {
+                append("{")
+                append("\"name\":\"${escapeJson(data["name"]?.toString() ?: "Unknown")}\",")
+                append("\"brand\":\"${escapeJson(data["brand"]?.toString() ?: "")}\",")
+                append("\"category\":\"${escapeJson(data["category"]?.toString() ?: "other")}\",")
+                append("\"subCategory\":\"${escapeJson(data["subCategory"]?.toString() ?: "")}\",")
+                val proof = data["proof"]?.toString()?.toDoubleOrNull()
+                if (proof != null) append("\"proof\":$proof,") else append("\"proof\":null,")
+                val abv = data["abvPercent"]?.toString()?.toDoubleOrNull()
+                if (abv != null) append("\"abvPercent\":$abv,") else append("\"abvPercent\":null,")
+                append("\"volume\":\"${escapeJson(data["volume"]?.toString() ?: "750ml")}\",")
+                append("\"notes\":\"${escapeJson(data["notes"]?.toString() ?: "")}\",")
+                append("\"photoFilename\":\"${escapeJson(data["photoFilename"]?.toString() ?: "placeholder.jpg")}\",")
+                append("\"stockLevel\":\"full\",")
+                append("\"stockStatus\":\"in-stock\"")
+                append("}")
+            }
+
+            OutputStreamWriter(connection.outputStream).use { it.write(json) }
+
+            val success = connection.responseCode == 201 || connection.responseCode == 200
+            if (success) {
+                // Refresh bottle list from server
+                refreshData()
+            }
+            return@withContext success
+        } catch (e: Exception) {
+            android.util.Log.e("DrinkRepo", "Create bottle error", e)
+            return@withContext false
+        }
+    }
+
+    private fun escapeJson(s: String): String {
+        return s.replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+    }
 }
+

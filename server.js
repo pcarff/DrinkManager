@@ -483,6 +483,109 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 15b. ANALYZE BOTTLE IMAGE: POST /api/analyze-bottle (AI image analysis via Gemini)
+  if (req.method === 'POST' && pathname === '/api/analyze-bottle') {
+    parseRequestBody(req, async (err, payload) => {
+      if (err || !payload.imageBase64) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'imageBase64 is required' }));
+        return;
+      }
+
+      const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+      if (!GEMINI_API_KEY) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'GEMINI_API_KEY environment variable not set' }));
+        return;
+      }
+
+      try {
+        // Save the photo to disk
+        const finalFilename = `scan_${Date.now()}.jpg`;
+        const targetPath = path.join(PHOTOS_DIR, finalFilename);
+        const base64Data = payload.imageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+        fs.writeFileSync(targetPath, buffer);
+        console.log(`Saved scanned bottle photo: ${finalFilename}`);
+
+        // Call Gemini API for image analysis
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const prompt = `You are an expert liquor and spirits identifier. Analyze this bottle image and extract the following information.
+Return ONLY a valid JSON object (no markdown, no explanation) with these fields:
+{
+  "name": "Full product name as shown on the label",
+  "brand": "Brand/distillery name",
+  "category": "One of: whiskey, bourbon, scotch, rye, rum, tequila, gin, vodka, brandy, liqueur, amaro, aperitivo, wine, vermouth, port, moonshine, schnapps, syrup, other",
+  "subCategory": "More specific type if applicable (e.g. 'Single Malt', 'Reposado', 'London Dry')",
+  "proof": numeric proof value or null if not visible,
+  "abvPercent": numeric ABV percentage or null if not visible,
+  "volume": "bottle volume as string like '750ml', '1L', etc. or null if not visible",
+  "notes": "Brief tasting notes or description from the label if visible, otherwise a brief description of the spirit"
+}
+If you cannot determine a field, use null. For category, pick the closest match from the list.`;
+
+        const geminiBody = JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: 'image/jpeg',
+                  data: base64Data
+                }
+              }
+            ]
+          }],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 1024
+          }
+        });
+
+        const geminiResp = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: geminiBody
+        });
+
+        if (!geminiResp.ok) {
+          const errText = await geminiResp.text();
+          console.error('Gemini API error:', geminiResp.status, errText);
+          res.writeHead(502, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Gemini API request failed', details: errText, photoFilename: finalFilename }));
+          return;
+        }
+
+        const geminiResult = await geminiResp.json();
+        let responseText = geminiResult.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+
+        // Strip markdown code fences if present
+        responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+
+        let bottleData;
+        try {
+          bottleData = JSON.parse(responseText);
+        } catch (parseErr) {
+          console.error('Failed to parse Gemini response:', responseText);
+          bottleData = { name: 'Unknown Bottle', category: 'other', notes: responseText };
+        }
+
+        // Attach the photo filename
+        bottleData.photoFilename = finalFilename;
+
+        console.log('Gemini bottle analysis:', JSON.stringify(bottleData, null, 2));
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(bottleData));
+      } catch (analyzeErr) {
+        console.error('Analyze bottle error:', analyzeErr);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to analyze bottle image' }));
+      }
+    });
+    return;
+  }
+
   // 15. PHOTO UPLOAD: POST /api/upload-photo (Base64 image upload)
   if (req.method === 'POST' && pathname === '/api/upload-photo') {
     parseRequestBody(req, (err, payload) => {
